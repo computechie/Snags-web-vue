@@ -1,0 +1,126 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('../fonts/icomoon.eot?d0efs8');
+  src:  url('../fonts/icomoon.eot?d0efs8#iefix') format('embedded-opentype'),
+    url('../fonts/icomoon.ttf?d0efs8') format('truetype'),
+    url('../fonts/icomoon.woff?d0efs8') format('woff'),
+    url('../fonts/icomoon.svg?d0efs8#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+ 
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-question-circle-o:before {
+  content: "\e900";
+}
+.icon-playlist_add_check:before {
+  content: "\e901";
+}
+.icon-folder-open-o:before {
+  content: "\e902";
+}
+.icon-recycle:before {
+  content: "\e903";
+}
+.icon-list-ul:before {
+  content: "\e904";
+}
+.icon-search:before {
+  content: "\e905";
+}
+.icon-document-certificate:before {
+  content: "\e906";
+}
+.icon-wrench:before {
+  content: "\e907";
+}
+.icon-list:before {
+  content: "\e908";
+}
+.icon-folder_open:before {
+  content: "\e909";
+}
+.icon-archive:before {
+  content: "\e90a";
+}
+.icon-cycle:before {
+  content: "\e90b";
+}
+.icon-cogs:before {
+  content: "\e90c";
+}
+.icon-profile:before {
+  content: "\e923";
+}
+.icon-phone:before {
+  content: "\e942";
+}
+.icon-calendar:before {
+  content: "\e953";
+}
+.icon-display:before {
+  content: "\e956";
+}
+.icon-bubble:before {
+  content: "\e96b";
+}
+.icon-bubble2:before {
+  content: "\e96e";
+}
+.icon-user:before {
+  content: "\e971";
+}
+.icon-users:before {
+  content: "\e972";
+}
+.icon-user-check:before {
+  content: "\e975";
+}
+.icon-equalizer:before {
+  content: "\e992";
+}
+.icon-cog:before {
+  content: "\e994";
+}
+.icon-pictures:before {
+  content: "\e999";
+}
+.icon-meter:before {
+  content: "\e9a6";
+}
+.icon-bin:before {
+  content: "\e9ac";
+}
+.icon-clipboard:before {
+  content: "\e9b8";
+}
+.icon-attachment:before {
+  content: "\e9cd";
+}
+.icon-info:before {
+  content: "\ea0c";
+}
+.icon-exit:before {
+  content: "\ea14";
+}
+.icon-arrow-left:before {
+  content: "\ea38";
+}
+.icon-book:before {
+  content: "\e91f";
+}

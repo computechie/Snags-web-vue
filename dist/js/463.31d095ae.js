@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunktransport"]=self["webpackChunktransport"]||[]).push([[463],{7463:function(t,n,r){r.r(n),r.d(n,{default:function(){return f}});var e=r(3396),o=r(7139);const s={class:"alignBootmLeftAtPage align-middle text-center"};function a(t,n){return(0,e.wg)(),(0,e.iD)("div",s," Version: "+(0,o.zw)(t._rootVersion),1)}var i=r(89);const c={},u=(0,i.Z)(c,[["render",a]]);var f=u}}]);
+//# sourceMappingURL=463.31d095ae.js.map

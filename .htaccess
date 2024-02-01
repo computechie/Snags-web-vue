@@ -1,0 +1,68 @@
+RewriteEngine On
+
+#RewriteCond %{HTTP_HOST} ^195\.78\.32\.13
+#RewriteRule (.*) https://www.it-b.hr/$1 [R,L]
+
+
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+RewriteCond %{HTTP_HOST} ^it-b.hr [NC]
+RewriteRule (.*)$ https://www.it-b.hr/$1 [R=301,L]
+
+#Rewritecond %{HTTP_HOST} !^(.*)it-b\.hr
+#RewriteRule (.*) https://www.it-b.hr/error505.php [R=404,NC,L]
+
+
+
+
+IndexIgnore *
+
+<IfModule mod_deflate.c>
+	<FilesMatch "\.(js|css|php)$">
+		SetOutputFilter DEFLATE
+	</FilesMatch>
+</IfModule>
+
+
+
+
+##izradili smo po kategorijama
+RewriteRule ^(.*)web-stranice-za-(.*) /strn.php?alias=izradili_smo&kat=$2 [QSA,L]
+
+RewriteRule ^(.*)str/(.*)/(.*)$ /strn.php?alias=$2 [QSA,L]
+
+#Preusmjeravanje po�etne stranice na /izrada-web-stranica
+RewriteRule ^www.it-b.hr http://www.it-b.hr/izrada-web-stranica [R=301,L]
+RewriteRule ^(.*)izrada-web-stranica(.*)$ /index_2.php [L,NC]
+
+# preusmjeravanje starih stranica na nove:
+# ---------------------------------------
+RewriteRule ^(.*)web_hosting.php(.*)$ /str/web_hosting/ [R=301,L]
+RewriteRule ^(.*)web_aplikacije.php(.*)$ /str/izrada_web_aplikacija/ [R=301,L]
+RewriteRule ^(.*)oglasavanje_internet.php(.*)$ /str/oglasavanje_na_internetu/ [R=301,L]
+RewriteRule ^(.*)brojac.php(.*)$ /str/brojac_posjetitelja/ [R=301,L]
+RewriteRule ^(.*)desktop.php(.*)$ /str/desktop_aplikacije/ [R=301,L]
+RewriteRule ^(.*)facebook.php(.*)$ /str/facebook_aplikacije/ [R=301,L]
+RewriteRule ^(.*)firefox.php(.*)$ /str/dodaci_za_firefox/ [R=301,L]
+RewriteRule ^(.*)gadget.php(.*)$ /str/dodaci_gadgets/ [R=301,L]
+RewriteRule ^(.*)google_adwords.php(.*)$ /str/google_adwords/ [R=301,L]
+RewriteRule ^(.*)google_oglasavanje.php(.*)$ /str/google_adwords/ [R=301,L]
+RewriteRule ^(.*)internet_marketing.php(.*)$ /str/oglasavanje_na_internetu/ [R=301,L]
+RewriteRule ^(.*)izrada_web_stranica.php(.*)$ /str/izrada_web_stranica/ [R=301,L]
+RewriteRule ^(.*)kvalitetno.php(.*)$ /str/izrada_web_stranica/ [R=301,L]
+RewriteRule ^(.*)izradili_smo.php(.*)$ /str/izradili_smo/ [R=301,L]
+#RewriteRule ^(.*)kontakt.php(.*)$ /str/kontakt/ [L,QSA]
+RewriteRule ^(.*)onama.php(.*)$ /str/o_nama/ [R=301,L]
+RewriteRule ^(.*)optimizacija.php(.*)$ /str/seo_optimizacija/ [R=301,L]
+RewriteRule ^(.*)seo.php(.*)$ /str/seo_optimizacija/ [R=301,L]
+RewriteRule ^(.*)ostale_web_stranice.php(.*)$ /str/ostale_web_stranice/ [R=301,L]
+RewriteRule ^(.*)posebnosti.php(.*)$ /str/dodaci_gadgets/ [R=301,L]
+RewriteRule ^(.*)prevoditelj.php(.*)$ /str/online_prevoditelj/ [R=301,L]
+RewriteRule ^(.*)prostor.php(.*)$ /str/oglasavanje_trudnoca_net/ [R=301,L]
+RewriteRule ^(.*)provjera_domena.php(.*)$ /str/registracija_domena/ [R=301,L]
+RewriteRule ^(.*)registracija_domene.php(.*)$ /str/registracija_domena/ [R=301,L]
+
+
+
+RewriteRule ^(.*)izrada_web_stranica/(.*)/(.*)$ /izradili_smo1.php?kat=$2 [L]
