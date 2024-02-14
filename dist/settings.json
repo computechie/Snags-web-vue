@@ -1,10 +1,9 @@
-[{"AppTitle" : "Transport",
-   "RestUrl": "http://rnx4.w.dedikuoti.lt:8080", 
-   "LoginBackground" : "/images/transport.jpg",
-   "LoginLogo" : "/images/eurogera-logo-mazas-1.png",
-   "LoginLogoWhite" : "/images/eurogera-logo-mazas-1.png",
+[{"AppTitle" : "Snags",
+   "RestUrl": "https://s1.incontrolqms.com:50185", 
+   "LoginBackground" : "/images/login-background.jpg",
+   "LoginLogo" : "/images/login-logo.png",
+   "LoginLogoWhite" : "/images/login-logo-white.png",
    "DefaultProjectCard" : "/images/default-project-card.jpg",
    "LinkToHelpFile" : "",
    "LinkToUpdateHistory" : ""
 }]
- 

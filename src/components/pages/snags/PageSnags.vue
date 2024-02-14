@@ -1,0 +1,2805 @@
+<template>
+
+  <base-dialog :show="isLoading"  title="Authenticating..." fixed>
+    <base-spinner ></base-spinner>
+  </base-dialog>
+
+  <!-- if table is lazy load then global filter (search) in table not working so must be here ! PrimeVue bug!? -->
+    <span class="p-input-icon-right" id="searchBox">
+        <InputText v-model="searchQuery" placeholder="Keyword Search"  @change="onSearch" @input="onSearchInput"/>
+        <i class="pi pi-search" @click="onSearch"/>
+    </span>
+  <!-- -------------------  end    of search box      -->
+  
+<div  style="width:100%;" @contextmenu = "showContextMenu($event)">
+  <DataTable  
+            :totalRecords="totalRecords" 
+            :id="dataTable" 
+            :value="allSnags" lazy 
+            :paginator="true" 
+            :rows="pageSize"  
+            :first="first"
+            dataKey="id"  stripedRows v-model:filters="filters" filterDisplay="menu" key="key" 
+           
+            @page="onPage($event)"
+            @sort="onSort($event)"
+            @filter="onFilter($event)"
+            
+            @rowSelect="onRowSelect"
+            @rowClick="onRowClick"
+            
+
+            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+            paginatorStart="CurrentPageReport"
+            :rowsPerPageOptions="[25,50,100,250,500]" 
+            responsiveLayout="scroll"
+            currentPageReportTemplate="Showing {first} to {last} of total {totalRecords} snags"
+            :globalFilterFields="['code','title' ]"
+            selectionMode="single"
+            
+
+            :loading="loading1"
+            scrollable 
+            :scrollHeight="tableHeight"
+            >
+   
+
+
+              <template #header >
+                    
+                 <!-- if table is lazy load then global filter (search) in table not working so it can not be here, its on top of this page! PrimeVue bug!? -->
+                <!-- 
+                <div style="display:none" class="flex justify-content-between">
+                      <span class="p-input-icon-left" id="searchBox">
+                            <i class="pi pi-search" />
+                            <InputText v-model="filters['global'].value" placeholder="Keyword Search"/>
+                        </span>
+                    </div>
+                   -->
+
+
+                    <div class="row">
+                      <div class="col-md-4">
+                        <Button style="min-width:120px" v-tooltip.bottom="{ value: 'New Snag', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="newSnag" label="New snag"/>
+                        &nbsp;
+                        <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label="Download Report"/>
+                        &nbsp;
+                        <Button v-if="showInvoiceSelectedButton && userType=='ADMIN'" style="min-width:120px" v-tooltip.bottom="{ value: 'Invoice selected', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-check-circle" class="p-button-text" id="invoiceSelected" @click="invoiceSelected" label="Invoice selected"/>
+                    
+                    
+                      </div>
+                        
+                      <div class="col-md-8 text-end">
+                          <Calendar style="width:160px" v-tooltip.bottom="{ value: 'Date from', showDelay: 1000, hideDelay: 300 }" id="fromDateBox" class="dateDisplayInput" v-model="fromDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999" @change="changeDate('from')"/>
+                          <Calendar style="width:160px" v-tooltip.bottom="{ value: 'Date to', showDelay: 1000, hideDelay: 300 }" id="toDateBox" class="dateDisplayInput" v-model="toDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999" @change="changeDate('to')"/>
+                          <Button type="button" icon="pi pi-refresh" class="p-button-text" id="refreshButton" @click="refreshData" />
+                        </div>
+                    </div>
+
+                </template>
+           
+           <template #empty>
+                    
+           </template>
+           <template #loading>
+                    Loading data. Please wait...
+           </template>
+
+
+         
+
+    <Column field="date" header="Date Opened" style="min-width: 10rem;min-height:43px;">
+    
+      <template #body="{ data }">
+          {{format_date(data.date   ,'DD/MM/YYYY') }}         
+              
+          
+        </template>
+
+    </Column>
+
+
+
+    <Column field="code" header="Code"  bodyStyle="text-align: left"  style=";min-height:43px;">
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+        </template>
+    </Column>
+    <Column field="caption" header="Item"  bodyStyle="text-align: left"  style=";min-height:43px;min-width:320px">
+       
+      <template #body="{ data }">
+          <div style="display:inline-block;width:85%;padding-right:50px">{{data.caption}}
+             
+          </div>
+          <div  style="fdisplay:inline-block;display:block;width:15%" v-if="data.hasPhoto != ''"><i class="fa fa-camera"></i></div>
+
+        </template>
+      
+      
+      
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+        </template>
+    
+    </Column>
+    <Column field="status" header="Status" bodyStyle="text-align: left"  style=";min-height:43px;">
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+        </template>
+    </Column>
+
+    <Column field="assignedTo" header="Action By"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+
+    
+    <Column field="area" header="Location"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+    <Column field="workpackage" header="Work Package"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+    
+    <Column field="createdBy" header="Owner"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+
+    <Column field="signOffDate" header="Closed Date" style="min-width: 10rem;min-height:43px;">
+    <template #body="{ data }">
+        {{format_date(data.closeddate   ,'DD/MM/YYYY') }}         
+            
+        
+      </template>
+
+    </Column>
+    <Column field="closedBy" header="Closed By"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+
+   
+    <Column field="" header="" bodyStyle="text-align: left"  style=";min-height:43px;">
+      <template #header >
+          <div style="right: 20px;  position: absolute;">
+            <div style="float:right">Actions</div>
+          </div>
+        </template>
+        <template #body="">
+          
+          <div class="actionButtonsHolderTable">
+           
+            <div class="fa-stack fa-2x actionIcons" style="font-size:15px"  v-tooltip.bottom="{ value: 'Edit Snag', showDelay: 1000, hideDelay: 300 }"  @click="editClick">
+              <i class="fa-solid fa-square fa-stack-2x"></i>
+              <i class="fa-stack-1x fa-solid fa-pen-to-square" style="color: white"></i>
+            </div>
+            
+           
+            <div  class="fa-stack fa-2x actionIcons" style="font-size:15px;color:#aa0000" v-tooltip.left="{ value: 'Delete Snag', showDelay: 1000, hideDelay: 300 }" @click="deleteClick">
+              <i class="fa-solid fa-square fa-stack-2x"></i>
+              <i class="fa-stack-1x fa-solid fa-trash-can" style="color: white"></i>
+            </div>
+
+          </div>
+        
+        </template>
+
+
+
+    </Column>
+
+
+
+    <template #paginatorstart>
+    
+    </template>         
+    <template #paginatorend>
+      
+    </template>  
+    
+
+   
+
+
+</DataTable>
+</div>
+
+<div v-if="!showTable" class="alert alert-danger text-center">
+  Snags not found!
+</div>
+
+
+<div id="RightSidepanel" class="RightSidepanel" :class="panelClass">
+			
+		
+			
+        <div class="row">
+          <div class="col-md-12 text-end">
+            <i class="pi pi-times cursorHand closePanelButton" @click="closePanel"></i>
+          </div>
+        </div>
+
+        
+        <div class="row">
+          <div class="col text-center">
+            <h5 id="detailsHeadline">{{ tripCargoName }}</h5>
+          </div>
+        </div>	
+        
+       
+                
+            
+        <div class="row" style="">
+          <div class="col text-center" style="padding:19px">
+           
+            <TabView v-model:activeIndex="activeTab">    
+              <TabPanel header="Details">
+
+            <table class="table table-striped table-sm" id="detailsTable">
+             
+             <tbody>
+              <tr>
+                <td style="width:160px">Assigneg To:</td>
+                <td>{{ snagDetailsData.assignedTo }}</td>
+              </tr>
+
+              <tr>
+                <td>Title</td>
+                <td>{{ snagDetailsData.caption }}</td>
+              </tr>
+
+              <tr>
+                <td>Code</td>
+                <td>{{ snagDetailsData.code }}</td>
+              </tr>
+
+              <tr>
+                <td>Inspection No</td>
+                <td>{{ snagDetailsData.inspectionNo }}</td>
+              </tr>
+           
+         
+            </tbody>
+            
+
+           </table>
+
+           <div class="row">
+                <div class="col text-end" style="padding:0">
+                  <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
+                </div>
+             </div>
+          
+          </TabPanel>
+          
+          <TabPanel header="Pictures"  v-if="picturesTabShow">
+              <SwiperCarousel :tripImages="tripImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
+             
+             <div class="row" style="margin-top:12px">
+                <div class="col text-end" style="padding:0">
+                  <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
+                </div>
+             </div>
+              
+          </TabPanel>
+
+
+        </TabView>
+
+
+          </div>
+        </div>
+
+
+         <!-- zoomed image Dialog-->
+        <Dialog modal v-model:visible="visibleImagesModal" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+          <SwiperCarousel :tripImages="tripImages"  @deletePhotomodal="deletePhotoModal"/>
+        </Dialog>
+        
+       
+  
+       
+				
+</div>	
+
+
+ <!-- insert new trip Dialog-->
+ <Dialog @update:visible="handleClose" v-model:visible="newSnagDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+         
+        <template #header>
+          Enter new snag
+        </template> 
+        
+        <div class="container" id="formContainer">
+          
+          <div class="row insertFormRow align-items-center   even">
+            <div class="col-md-3"><label for="newSnagDate">Date *</label></div>
+            <div class="col-md-9">
+              <Calendar   @change="changeDate('from')" style="margin-left:0" id="newSnagDate" class="dateDisplayInput" v-model="newSnagDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
+            
+              <InlineMessage v-if="!newSnagDateOK">This field is required</InlineMessage>
+            </div>
+          </div>
+
+        
+
+         
+          <div class="row insertFormRow align-items-center   ">
+            <div class="col-md-3"><label for="newSnagTitle">Item *</label></div>
+            <div class="col-md-9"><InputText  @input="newSnagTitleOK=true" id="newSnagTitle" v-model="newSnagTitle" size="small"/>
+            <InlineMessage v-if="!newSnagTitleOK">This field is required</InlineMessage></div>
+          </div>
+
+          <div class="row insertFormRow align-items-center  even ">
+            <div class="col-md-3"><label for="newSnagCode">Code *</label></div>
+            <div class="col-md-9"><InputText   @input="newSnagCodeOK=true" id="newSnagCode" v-model="newSnagCode" size="small" />
+            <InlineMessage v-if="!newSnagCodeOK">This field is required</InlineMessage></div>
+          </div>
+
+          <div class="row insertFormRow align-items-center   ">
+            <div class="col-md-3"><label for="newSnagStatus">Status * </label></div>
+            <div class="col-md-9">
+              <Dropdown v-model="newSnagStatus" :options="allStatuses" filter optionLabel="name" placeholder="Select Status"></Dropdown>
+             
+
+            <InlineMessage v-if="!newSnagStatusOK">This field is required</InlineMessage></div>
+          </div>
+        
+                  
+         
+
+          <div class="row insertFormRow align-items-center   ">
+            <div class="col-md-6 text-left">
+              <Button @click="closeInsertDialog" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"  icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
+           
+            </div>
+            <div class="col-md-6 text-end">
+              <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Save snag', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-pencil" class="p-button-text" @click="saveSnag" label="Save snag"/>
+             </div>
+          </div>
+        
+        </div>
+          
+
+
+      </Dialog> 
+
+<!-- Edit Snag Dialog-->
+<Dialog @update:visible="handleClose" v-model:visible="editSnagDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+         
+         <template #header>
+           Edit Snag
+         </template> 
+         
+         <div class="container" id="formContainer">
+           
+           <div class="row insertFormRow align-items-center   even">
+             <div class="col-md-3"><label for="editSnagDate">Date *</label></div>
+             <div class="col-md-9">
+              
+              <Calendar :value="editSnagDate" v-model="editSnagDate"  @change="changeDate('from')" style="margin-left:0" id="editSnagDate" class="dateDisplayInput"  showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
+             
+               <InlineMessage v-if="!editSnagDateOK">This field is required</InlineMessage>
+             </div>
+           </div>
+
+           <div class="row insertFormRow align-items-center   ">
+             <div class="col-md-3"><label for="editSnagTitle">Item *</label></div>
+             <div class="col-md-9"><InputText @input="editSnagTitleOK=true" id="editSnagTitle" v-model="editSnagTitle"  size="small"/>
+             <InlineMessage v-if="!editSnagTitleOK">This field is required</InlineMessage></div>
+           </div>
+
+ 
+           <div class="row insertFormRow align-items-center   even">
+             <div class="col-md-3"><label for="editSnagStatus">Status *</label></div>
+             <div class="col-md-9">
+              <!--<InputText  @input="editSnagStatusOK=true" id="editSnagStatus" v-model="editSnagStatus"  size="small"/>-->
+              <Dropdown v-model="editSnagStatus" :options="allStatuses" filter optionLabel="name" :placeholder="editSnagStatus"></Dropdown>
+             <InlineMessage v-if="!editSnagStatusOK">This field is required</InlineMessage></div>
+           </div>
+
+
+ 
+           <div class="row insertFormRow align-items-center   ">
+             <div class="col-md-3"><label for="username">Code *</label></div>
+             <div class="col-md-9"><InputText @input="editSnagCodeOK=true"  id="editSnagCode" v-model="editSnagCode" size="small" />
+             <InlineMessage v-if="!editSnagCodeOK">This field is required</InlineMessage></div>
+           </div>
+ 
+        
+           
+          
+ 
+ 
+           <div class="row insertFormRow align-items-center   ">
+             <div class="col-md-6 text-left">
+               <Button @click="closeEditDialog" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
+            
+             </div>
+             <div class="col-md-6 text-end">
+               <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Save changes', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-pencil" class="p-button-text" @click="editSnag" label="Save changes"/>
+              </div>
+           </div>
+         
+         </div>
+           
+ 
+ 
+       </Dialog> 
+
+
+ <!-- dialog info --> 
+ <Dialog v-model:visible="displayInfoDialog" modal  :style="{ width: '20rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <template #header=""> 
+        <h4> {{ InfoModalHeader }}</h4>
+    </template>
+  
+            <span class="font-bold text-2xl block mb-2 mt-4"></span>
+            <p class="mb-0">{{InfoModalMessage }}</p>
+            <div class="flex text-end gap-2 mt-4">
+                <Button label="Ok" @click="closeInfo"></Button>
+              
+            </div>          
+</Dialog>
+
+ <!-- dialog confirm Delete --> 
+ <Dialog v-model:visible="displayDeleteConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <template #header=""> 
+        <h4> Please confirm</h4>
+    </template>
+  
+            <span class="font-bold text-2xl block mb-2 mt-4"></span>
+            <p class="mb-0">Are you sure that you want to Delete Snag <strong>'{{ editSnagCargoName }}'</strong>?</p>
+          
+          <div class="row" style="margin-top:30px">
+              <div class="col-md-6 text-start">
+                  <Button class="redButton" label="Cancel" @click="displayDeleteConfirm=false"></Button>
+              </div>
+              <div class="col-md-6 text-end">
+                  <Button label="Yes, delete" @click="deleteTrip"></Button>
+            </div>   
+          </div>
+          
+</Dialog>
+
+
+
+<!-- dialog confirm UNinvoice --> 
+<Dialog v-model:visible="displayUnInvoiceConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <template #header=""> 
+        <h4> Please confirm</h4>
+    </template>
+  
+            <span class="font-bold text-2xl block mb-2 mt-4"></span>
+            <p class="mb-0">Are you sure that you want to remove mark 'Invoiced'<br> for trip <strong>'{{ editSnagCargoName }}'</strong>?</p>
+          
+          <div class="row" style="margin-top:30px">
+              <div class="col-md-6 text-start">
+                  <Button class="redButton" label="Cancel" @click="displayInvoiceConfirm=false"></Button>
+              </div>
+              <div class="col-md-6 text-end">
+                  <Button label="Yes, remove it" @click="unInvoiceThisTrip"></Button>
+            </div>   
+          </div>
+          
+</Dialog>
+
+
+<!-- Send Invoice Dialog-->
+<Dialog @update:visible="handleClose" v-model:visible="sendInvoiceDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+         
+         <template #header>
+           Mark this trip as Invoiced
+         </template> 
+         
+         <div class="container" id="formContainer">
+           
+           <div class="row insertFormRow align-items-center   even">
+             <div class="col-md-3"><label for="invoiceDate">Invoice Date *</label></div>
+             <div class="col-md-9"><Calendar  hourFormat="24" showTime @change="changeDate('from')" style="margin-left:0" id="invoiceDate" class="dateDisplayInput" v-model="invoiceDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
+             
+               <InlineMessage v-if="!invoiceDateOK">This field is required</InlineMessage>
+             </div>
+           </div>
+ 
+          
+ 
+ 
+ 
+           <div class="row insertFormRow align-items-center   ">
+             <div class="col-md-6 text-left">
+               <Button @click="sendInvoiceDialog=false" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
+            
+             </div>
+             <div class="col-md-6 text-end">
+               <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Mark as Invoiced', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-check-circle" class="p-button-text" @click="invoiceThisTrip" label="Mark as Invoiced"/>
+              </div>
+           </div>
+         
+         </div>
+           
+ 
+ 
+       </Dialog> 
+
+<!-- Send Multiple Invoice Dialog-->
+<Dialog @update:visible="handleClose" v-model:visible="sendMultipleInvoiceDialog" modal header="header" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+         
+         <template #header>
+
+            <span v-if="selectedIDsForInvoicing.length == 1">Mark selected trip as Invoiced</span>
+            <span v-if="selectedIDsForInvoicing.length > 1">Mark selected <span style="font-weight:bold">{{ selectedIDsForInvoicing.length }} trips </span> as Invoiced</span>
+          
+         </template> 
+
+
+         
+         <div class="container" id="formContainer">
+           
+           <div class="row insertFormRow align-items-center   even">
+             <div class="col-md-3"><label for="invoiceDate">Invoice Date *</label></div>
+             <div class="col-md-9"><Calendar  hourFormat="24" showTime @change="changeDate('from')" style="margin-left:0" id="invoiceMultipleDate" class="dateDisplayInput" v-model="invoiceDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
+             
+               <InlineMessage v-if="!invoiceDateOK">This field is required</InlineMessage>
+             </div>
+           </div>
+ 
+          
+ 
+ 
+ 
+           <div class="row insertFormRow align-items-center   ">
+             <div class="col-md-6 text-left">
+               <Button @click="sendMultipleInvoiceDialog=false" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
+            
+             </div>
+             <div class="col-md-6 text-end">
+               <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Mark as Invoiced', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-check-circle" class="p-button-text" @click="invoiceMultipleTrips" label="Mark as Invoiced"/>
+              </div>
+           </div>
+         
+         </div>
+           
+ 
+ 
+       </Dialog> 
+
+
+
+ <!-- dialog confirm Delete Photo --> 
+ <Dialog v-model:visible="displayDeletePhotoConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <template #header=""> 
+        <h4> Please confirm</h4>
+    </template>
+  
+            <span class="font-bold text-2xl block mb-2 mt-4"></span>
+            <p class="mb-0">Are you sure that you want to delete this photo?</p>
+          
+          <div class="row" style="margin-top:30px">
+              <div class="col-md-6 text-start">
+                  <Button class="redButton" label="Cancel" @click="displayDeletePhotoConfirm=false"></Button>
+              </div>
+              <div class="col-md-6 text-end">
+                  <Button label="Yes, delete" @click="deletePhoto"></Button>
+            </div>   
+          </div>
+           
+</Dialog>
+
+
+<!-- dialog upload photo --> 
+<Dialog v-model:visible="displayUploadModal" modal  :style="{ width: '60rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+    <template #header=""> 
+        <h4> Upload photo</h4>
+    </template>
+  
+         <div class="row" style="margin-top:30px">
+              <div class="col">
+               
+                <FileUpload name="files[]" :customUpload="true" url="/api/upload" @uploader="customUploader($event)" :multiple="false" accept="image/*" :maxFileSize="10000000">
+                  <template #empty>
+                      <p>Drag and drop files to here to upload.</p>
+                  </template>
+                </FileUpload>
+
+              </div>
+              
+        </div>   
+         
+          
+      
+           
+</Dialog>
+
+<div id="div-context-menu"  class="cls-context-menu" style="left: 11px; top: 13px; display: none">
+       <ul>
+        
+          <ul>
+            <li v-if="!AllPageMarked && !AllMarked"><a @click="SelectAllPage('select')">Select all records on current page</a></li>
+            <li v-if="!AllPageMarked && !AllMarked"><a @click="SelectAll('select')" >Select all on all pages</a></li>
+           
+            <li v-if="AllMarked || AllPageMarked"><a @click="SelectAll('deselect')" >Deselect All </a></li>
+
+          </ul>
+       
+       </ul>
+     </div>
+
+
+</template>
+
+<script>
+// Primevue datatable help: https://www.primefaces.org/primevue/datatable //
+
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import Calendar from 'primevue/calendar';
+import Dialog from 'primevue/dialog';
+import InlineMessage from 'primevue/inlinemessage';
+//import InputNumber from 'primevue/inputnumber';
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
+import Dropdown from 'primevue/dropdown';
+import FileUpload from 'primevue/fileupload';
+//import Checkbox from 'primevue/checkbox';
+
+import axios from "axios";
+import $ from "jquery";
+
+import {FilterMatchMode,FilterOperator} from 'primevue/api';         // for filtering
+
+import moment from "moment";
+
+
+
+
+export default {
+  props: ["systemId"],
+  components: {
+    InputText,Button,
+    DataTable,
+    Column,
+    Calendar,
+    Dialog,
+    TabView,
+    TabPanel,
+    InlineMessage,
+    //InputNumber,
+    Dropdown,
+    FileUpload,
+    //Checkbox
+  },
+ emits:['extend-session','showSearchbar'],
+
+  data() {
+    return {
+      ProjectRef:'61196AD9FF1A440A9267D3044E8B595E',
+      showTable: true,
+
+      first:0,
+      snagsPage:1,       // default page to load
+      pageSize:100,      // default page size
+      totalRecords:0, // total records, get this from snags json
+
+      searchQuery:'',
+      captionFilter:'',
+      codeFilter:'',
+
+      snagDetails:[],      // all snag details includin images
+      snagDetailsData:[],  //only details, without images
+
+      howManyTrips:'',
+      AllPageMarked:false,
+      AllMarked:false,
+      sendMultipleInvoiceDialog:false,
+      showInvoiceSelectedButton:false,
+      selectedIDsForInvoicing:[],
+      checkedIDs:[],
+      invoiceDate:'',
+      invoiceDateOK:true,
+      sendInvoiceDialog:false,
+      displayUnInvoiceConfirm:false,
+      dataTable:'dataTable',
+      downloadedReport:'',
+      binaryfile:'',
+      photoIdForDelete:'',
+      displayDeletePhotoConfirm:false,
+      uploadFIlename:'',
+      displayUploadModal:false,
+      allStatuses:[{"key":"Ready","name":"Ready"},{"key":"Completed","name":"Completed"}],
+      ClickedRowId:'',
+      tableHeight:'calc( 100vh - 215px)',
+      displayDeleteConfirm:false,
+      deletingTripName:'',
+         newSnagDialog:false,
+         editSnagDialog:false,
+          isLoading: true,
+          userType : '',
+          userLocale:'',
+          loading1: true,
+          loading2: true,
+          filters1: null,
+          visibleImagesModal:false,
+          tripImages: [],
+          picturesTabShow:false,
+          activeTab:0,
+          SnagDate: '',
+          tripUserEmail: '',
+          tripFrom: '',
+          tripTo: '',
+          tripFixedCosts: '',
+          tripCargoName: '',
+          tripDistance: '',
+          tripDistanceCosts: '',
+          tripVatPercentage: '',
+          tripSum: '',
+          tripSumVAT: '',
+          tripCompanyName: '',
+          tripComments: '',
+          tripCreated: '',
+          tripUserFullName: '',
+          openedcargoname :'',
+
+          displayInfoDialog:false,
+          InfoModalHeader:'',
+          InfoModalMessage:'',
+
+          newSnagDate:'',
+          newSnagFrom:'',
+          newSnagTo:'',
+          newSnagTitle:'',
+          newSnagCode:'0',
+          newSnagStatus:'0',
+          newSnagStatusCosts:'0',
+          newSnagCompanyName:'',
+          newSnagComments:'',
+
+          newSnagDateOK:true,
+          newSnagFromOK:true,
+          newSnagToOK:true,
+          newSnagTitleOK:true,
+          newSnagCodeOK:true,
+          newSnagStatusOK:true,
+          newSnagStatusCostsOK:true,
+          newSnagCompanyNameOK:true,
+          newSnagCommentsOK:true,
+
+          editSnagDate:'',
+          editSnagTitle:'',
+          editSnagCode:'',
+          editSnagCargoName:'',
+          editSnagFixedCosts:'0',
+          editSnagDistance:'0',
+          editSnagDistanceCosts:'0',
+          editSnagStatus:'',
+          editSnagComments:'',
+
+          editSnagDateOK:true,
+          editSnagTitleOK:true,
+          editSnagCodeOK:true,
+          editSnagCargoNameOK:true,
+          editSnagFixedCostsOK:true,
+          editSnagDistanceOK:true,
+          editSnagDistanceCostsOK:true,
+          editSnagStatusOK:true,
+          editSnagCommentsOK:true,
+                    editSnagInvoiced:'',
+
+          panelClass:'closedPanel',
+          filters: {
+               'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
+               'code':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'caption':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'status':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'createdBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'area':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'worksPackage':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'closedBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'assignedTo':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               
+              
+            },
+
+      aSystemDoc: "",
+    matchModes: [
+        {label: 'Starts With', value: FilterMatchMode.STARTS_WITH},
+        {label: 'Contains', value: FilterMatchMode.CONTAINS},
+    ],
+      allSnags: [],
+
+      fromDate:'',
+      toDate:''
+    };
+  },
+  methods: {
+
+    selectingForInvoice(clickedID){
+     
+           
+        if(!this.checkedIDs[clickedID]){
+                this.selectedIDsForInvoicing.push(clickedID);
+        }else{
+          
+          const index = this.selectedIDsForInvoicing.indexOf(clickedID);
+          this.selectedIDsForInvoicing.splice(index, 1);     
+        
+        }
+
+      
+        if( this.selectedIDsForInvoicing.length > 0){
+            this.showInvoiceSelectedButton=true;
+        }else{
+            this.showInvoiceSelectedButton=false;
+            this.AllPageMarked = false;
+        }
+
+      
+                 
+                  
+              
+
+    },
+
+     invoiceSelected(){
+      this.invoiceDate =  moment().format('DD/MM/YYYY HH:mm');
+
+     /*var addText = '';
+      if (this.selectedIDsForInvoicing.length == 1){
+        addText = 'Mark selected trip as Invoiced';
+      }else{
+        addText = ''+this.selectedIDsForInvoicing.length+'</strong> trips as Invoiced';
+      }
+      this.howManyTrips = addText;*/
+
+       this.sendMultipleInvoiceDialog = true;
+     },
+      
+   
+
+    reorganizePagination(){
+      $(".p-paginator-current").detach().appendTo('.p-paginator-left-content');
+      $(".p-paginator-rpp-options").detach().appendTo('.p-paginator-right-content');
+    },
+    
+    moveSearchBoxToTop(){
+     
+        //default search box is inside header of the datatable, must move to the top of the page
+        $('#hereMoveSearch').empty();
+        $("#searchBox").detach().appendTo('#hereMoveSearch');
+    },
+
+    newSnag(){
+      this.resetInputFields();
+      this.newSnagDate = this.format_date(moment(),'DD/MM/YYYY');
+      
+     
+      //show dialog for insert
+      this.newSnagDialog = true
+      
+    },
+    editSnag(){
+
+      
+       var AllOk = true;
+
+     
+      if(this.editSnagDate == ''){
+        this.editSnagDateOK = false;
+        AllOk = false;
+      }else{this.editSnagDateOK = true;}
+
+      if(this.editSnagTitle == ''){
+        this.editSnagTitleOK = false;
+        AllOk = false;
+      }else{this.editSnagTitleOK = true;}
+
+      if(this.editSnagCode == ''){
+        this.editSnagCodeOK = false;
+        AllOk = false;
+      }else{this.editSnagCodeOK = true;}
+
+    
+      
+      if(this.editSnagStatus.name){
+          this.editSnagStatus = this.editSnagStatus.name;
+      }
+     
+      if(this.editSnagStatus == ''){
+        this.editSnagStatusOK = false;
+        AllOk = false;
+      }else{this.editSnagStatusOK = true;}
+
+    /*  if(this.newSnagComments == ''){
+        this.newSnagCommentsOK = false;
+        AllOk = false;
+      }else{this.newSnagCommentsOK = true;}*/
+
+
+      if(AllOk == true){
+             this.editSnagInDatabase();
+      }
+
+    },
+    editSnagInDatabase(){
+     
+         this.panelClass = 'closedPanel';   
+         this.isLoading = true;  
+         
+        
+          var SnagDate = this.format_date(moment(this.editSnagDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
+
+        
+         
+          const sessionId=this.$store.getters.token;
+          const baseUrl = this._rootRestUrl;
+                  
+          let formData = JSON.stringify({key:this.ClickedRowId,sessionId:sessionId,caption:this.editSnagTitle,code:this.editSnagCode,status:this.editSnagStatus,userEmail:'',date:SnagDate});
+     
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            }};
+         
+
+           axios
+            .put(baseUrl + "/api/Snags/EditSnag",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.editSnagDialog=false;
+
+               this.displayInfoDialog= true;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Changes are saved';
+               this.isLoading = false; 
+           })
+            
+             .catch(function (error) {
+              // handle error
+                           
+                console.table(error);
+                this.editSnagDialog=false;
+                this.displayInfoDialog=true;
+                this.InfoModalHeader='Error!';
+                this.InfoModalMessage='An error occured while saving changes!';
+                this.isLoading = false; 
+            
+              });
+          
+          // after every request 
+        //  // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+    },
+
+
+    saveSnag(){
+      
+       var AllOk = true;
+
+      if(this.newSnagDate == ''){
+        this.newSnagDateOK = false;
+        AllOk = false;
+      }else{this.newSnagDateOK = true;}
+
+            if(this.newSnagTitle == ''){
+        this.newSnagTitleOK = false;
+        AllOk = false;
+      }else{this.newSnagTitleOK = true;}
+
+      if(this.newSnagCode== null){
+        this.newSnagCodeOK = false;
+        AllOk = false;
+      }else{this.newSnagCodeOK = true;}
+
+
+    if(this.newSnagStatus == undefined || this.newSnagStatus==''){
+       
+        this.newSnagStatus = '';
+        AllOk = false;
+        this.newSnagStatusOK = false;
+    }else{
+        this.newSnagStatus= this.newSnagStatus.name;
+        if(this.newSnagStatus == ''){
+          this.newSnagStatusOK = false;
+          AllOk = false;
+        }else{this.newSnagStatusOK = true;}
+    }
+
+    if(this.newSnagStatus == undefined){
+      this.newSnagStatus = '';
+        AllOk = false;
+        this.newSnagStatusOK = false;
+    }
+
+    /*  if(this.newSnagComments == ''){
+        this.newSnagCommentsOK = false;
+        AllOk = false;
+      }else{this.newSnagCommentsOK = true;}*/
+
+
+      if(AllOk == true){
+          this.InsertSnagToDatabase();
+      }
+
+    },
+
+    async  InsertSnagToDatabase(){
+      
+        this.panelClass = 'closedPanel';   
+        this.isLoading = true;  
+         
+       // const sessionId=this.$store.getters.token;
+       
+        //date and time from NOW()
+        var SnagDate = this.format_date(moment(this.newSnagDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
+        
+        const baseUrl = this._rootRestUrl;
+              
+       // let formData = JSON.stringify({sessionId:sessionId,tripsToInsert:[{key:'',from:this.newSnagFrom,to:this.newSnagTo,fixedCosts:this.newSnagCode,userEmail:'',date:SnagDate,cargoName:this.newSnagTitle,distance:this.newSnagStatus,distanceCosts:this.newSnagStatusCosts,companyName:this.newSnagCompanyName,comments:this.newSnagComments}] });
+        let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'SNAG',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
+
+        let config = {
+            headers: {
+              "Content-Type": "application/json",
+        }};
+
+          
+      await   axios
+            .post(baseUrl + "/api/Snags/InsertSnag",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.newSnagDialog=false;
+               this.displayInfoDialog= true;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Snag is inserted';
+               this.isLoading = false; 
+           })
+            
+             .catch(function (error) {
+              // handle error
+                 
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+                console.table(error);
+                this.newSnagDialog=false;
+                this.displayInfoDialog=true;
+                this.InfoModalHeader='Error!';
+                this.InfoModalMessage='An error occured while saving snag!';
+                this.isLoading = false; 
+            
+              });
+
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+   },
+
+    closeInfo(){
+      this.displayInfoDialog=false;
+    },
+
+
+    handleClose(shouldShow) {
+      
+      // shouldShow will always be `false`, so this is a bit redundant
+      if(!shouldShow){
+       // this.resetInputFields();
+      }
+      else {
+        // still open 
+      }
+    },
+
+    closeInsertDialog(){
+      this.newSnagDialog=false;
+      this.resetInputFields();
+    },
+
+    closeEditDialog(){
+      this.editSnagDialog=false;
+      this.resetInputFields();
+    },
+
+    resetInputFields(){
+         //reset input and edit fields ;)
+          this.newSnagDate='';
+          this.newSnagFrom='';
+          this.newSnagTo='';
+          this.newSnagTitle='';
+          this.newSnagCode='0';
+          this.newSnagStatus='0';
+          this.newSnagStatusCosts='0';
+          this.newSnagCompanyName='';
+          this.newSnagComments='';
+
+          this.newSnagDateOK=true;
+          this.newSnagFromOK=true;
+          this.newSnagToOK=true;
+          this.newSnagTitleOK=true;
+          this.newSnagCodeOK=true;
+          this.newSnagStatusOK=true;
+          this.newSnagStatusCostsOK=true;
+          this.newSnagCompanyNameOK=true;
+          this.newSnagCommentsOK=true;
+
+          this.editSnagDate='';
+          this.editSnagTitle='';
+          this.editSnagCode='';
+          this.editSnagCargoName='';
+          this.editSnagFixedCosts='0';
+          this.editSnagDistance='0';
+          this.editSnagDistanceCosts='0';
+          this.editSnagStatus='';
+          this.editSnagComments='';
+
+          this.editSnagDateOK=true;
+          this.editSnagTitleOK=true;
+          this.editSnagCodeOK=true;
+          this.editSnagCargoNameOK=true;
+          this.editSnagFixedCostsOK=true;
+          this.editSnagDistanceOK=true;
+          this.editSnagDistanceCostsOK=true;
+          this.editSnagStatusOK=true;
+          this.editSnagCommentsOK=true;
+
+ },
+   
+    editClick(){
+      
+      //show dialog for insert
+      this.editSnagDialog = true;
+
+    },
+
+    deleteClick(){
+       // show confirmation dialog
+        this.displayDeleteConfirm=true;
+
+    },
+
+    deletePhotoId(photoId){
+         // show confirmation dialog
+        this.displayDeletePhotoConfirm=true;
+        this.photoIdForDelete = photoId;
+    },
+
+    deletePhotoModal(photoId){
+         // show confirmation dialog
+  
+        this.photoIdForDelete = photoId;
+        this.deletePhoto();
+    },
+
+  async  deletePhoto(){
+        //user already confirmed
+         this.panelClass = 'closedPanel';   
+         this.isLoading = true;  
+           
+         const sessionId=this.$store.getters.token;
+         const baseUrl =this._rootRestUrl;
+      
+         let formData = JSON.stringify({sessionId:sessionId,key:this.photoIdForDelete});
+     
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+          }};
+
+          
+          await  axios
+            .post(baseUrl + "/api/v1/Trip/DeleteTripFile",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.displayDeletePhotoConfirm = false;
+               this.visibleImagesModal = false;
+               this.displayInfoDialog= true;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Photo is deleted';
+               this.isLoading = false; 
+           })
+            
+             .catch(function (error) {
+              // handle error
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+                console.table(error); // full error message inb console
+                this.displayDeleteConfirm = false;
+                this.displayDeletePhotoConfirm=true;
+                this.visibleImagesModal = false;
+                this.InfoModalHeader='Error!';
+                this.InfoModalMessage='An error occured while deleting photo!';
+                this.isLoading = false; 
+            
+              });
+            
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+    },
+
+  async  deleteTrip(){
+      //user already confirmed
+         this.panelClass = 'closedPanel';   
+         this.isLoading = true;  
+           
+         const sessionId=this.$store.getters.token;
+         const baseUrl = this._rootRestUrl;
+      
+         let formData = JSON.stringify({sessionId:sessionId,key:this.ClickedRowId});
+     
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+          }};
+
+          
+        await   axios
+            .post(baseUrl + "/api/v1/Trip/DeleteTrip",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.displayDeleteConfirm = false;
+               this.displayInfoDialog= true;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Trip is deleted';
+               this.isLoading = false; 
+           })
+            
+             .catch(function (error) {
+
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+              // handle error
+                console.table(error); // full error message inb console
+                this.displayDeleteConfirm = false;
+                this.displayInfoDialog=true;
+                this.InfoModalHeader='Error!';
+                this.InfoModalMessage='An error occured while deleting trip!';
+                this.isLoading = false; 
+            
+              });
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+    
+    },
+
+
+    downloadClick(){
+      alert("Download clicked")
+    } ,
+
+     refreshData(){
+      
+        //get selected dates
+        if (this.fromDate.length!=10){
+            this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
+        }
+
+        if (this.toDate.length!=10){
+            this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
+        }
+     
+      // and go for trips
+      this.getSnags();
+      this.getCompanies();
+    },
+    
+          
+    format_date_to_full(aDate,aTime){
+   
+        //excpected input: 14/04/2023
+       var year = aDate.substring(6, 10);
+       var month = aDate.substring(3, 5);
+       var day = aDate.substring(0, 2);
+
+        return year + '-' + month + '-' +day + " "+aTime;
+      
+
+    },
+
+    format_date_to_full_time(aDate){
+   
+   //excpected input: 14/04/2023 14:33
+  var year = aDate.substring(6, 10);
+  var month = aDate.substring(3, 5);
+  var day = aDate.substring(0, 2);
+  var hour = aDate.substring(11, 13);
+  var min = aDate.substring(14, 16);
+  var sec = '00';
+
+   return year + '-' + month + '-' +day + ' '+hour+':'+min+':'+sec;
+ 
+
+},
+
+    format_date_to_dateTime(aDate){
+   
+    //expected input: 2023-10-24 14:30:43
+    var year = aDate.substring(0, 4);
+    var month = aDate.substring(5, 7);
+    var day = aDate.substring(8, 10);
+    var hour = aDate.substring(11, 13);
+    var min = aDate.substring(14, 16);
+
+    //return year + '-' + month + '-' +day + " "+hour+":"+min;
+    return day + '/' + month + '/' +year + " "+hour+":"+min;
+
+},
+
+
+  async  getCompanies(){
+/*
+          const sessionId=this.$store.getters.token;
+          const baseUrl = this._rootRestUrl;
+          
+          let formData = JSON.stringify({ sessionId: sessionId });
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+         await  axios
+            .get(baseUrl + "/api/v1/Company/GetCompanies/?sessionId="+sessionId+"", formData, config)
+            .then((response) => {
+               this.allStatuses = response.data;
+               
+               //sorting function:
+                const sortArrayOfObjects = (arr, propertyName, order = 'ascending') => {
+                      const sortedArr = arr.sort((a, b) => {
+                        if (a[propertyName] < b[propertyName]) {
+                          return -1;
+                        }
+                        if (a[propertyName] > b[propertyName]) {
+                          return 1;
+                        }
+                        return 0;
+                      });
+
+                      if (order === 'descending') {
+                        return sortedArr.reverse();
+                      }
+
+                      return sortedArr;
+                    };
+               //-- end of sorting function
+
+               
+               
+               this.allStatuses = sortArrayOfObjects( this.allStatuses, "name");
+            
+             // console.table(this.allStatuses)
+                        
+            })           
+             .catch(function (error) {
+                // handle error
+                if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+                console.table(error);
+             });
+            
+           // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+    
+            */
+
+
+    },
+
+    extendTime(){
+      this.$emit('extend-session'); // extend time when session timeout popup will be shown
+    },
+
+    async getSnags(){
+     
+ //get selected dates
+
+        if (this.fromDate.length!=10){
+            this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
+        }
+
+        if (this.toDate.length!=10){
+            this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
+        }
+
+
+          //save dates to local storage so it remebeer when swithing tabs:
+          localStorage.setItem('fromDate',this.fromDate);
+          localStorage.setItem('toDate',this.toDate);
+
+          this.panelClass = 'closedPanel';   
+          this.isLoading = true;  
+         
+       /*   const fromDateFull = this.format_date_to_full(this.fromDate, '00:00:00');
+            const toDateFull = this.format_date_to_full(this.toDate,'23:59:59');
+          */
+
+        /*  
+          const sessionId=this.$store.getters.token;
+          const DateFrom=fromDateFull;
+          const DateTo= toDateFull;
+          const UserId= localStorage.getItem("userId");
+          const UserType= this.userType;
+         */
+        
+          const baseUrl = this._rootRestUrl;
+          
+          let formData = JSON.stringify({ pageNumber: this.snagsPage });
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+
+          /*  captionFilter:'',
+              codeFilter:'', 
+          */
+          var addOnFilter = '';  
+
+            if(this.captionFilter != ''){
+              addOnFilter += '&caption='+this.captionFilter;
+            }
+            if(this.codeFilter != ''){
+              addOnFilter += '&code='+this.codeFilter;
+            }
+
+            if(this.searchQuery!=''){
+              addOnFilter += '&searchQuery='+this.searchQuery;
+            }
+          
+           await axios
+            .get(baseUrl + "/api/Snags/GetAllSnags/?pageNumber="+this.snagsPage + addOnFilter , formData, config)
+            .then((response) => {
+              
+                        
+              this.allSnags = response.data.snags;
+              this.totalRecords = response.data.totalRecords;
+            
+              if(this.totalRecords == 0){
+                this.showTable = false;
+              }else{
+                this.showTable = true;
+              }
+             
+              this.isLoading = false;  
+              this.reorganizePagination();
+              
+              
+           })
+            
+             .catch(function (error) {
+              // handle error
+           
+
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+            
+              
+            });
+            
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+      },
+      onRowClick(event) {
+      
+       
+                
+          this.ClickedRowId = event.data.key; // key for update
+          this.editSnagDate = this.format_date(event.data.date,'DD/MM/YYYY');
+          this.editSnagTitle = event.data.caption;
+          this.editSnagStatus = event.data.status;
+          this.editSnagCode = event.data.code;
+         
+
+
+      // alert( event.data.id);
+      
+        
+        
+          $('.hiddenFields').each(function() {
+            
+            $(this).closest('tr').removeClass('highlight');
+           });
+          
+          $('.hiddenFields').each(function() {
+           
+            if($(this).attr('data')==event.data.id){
+              $(this).closest('tr').addClass('highlight');
+             }
+          
+          });
+
+      },
+   
+      onRowSelect(event) {
+      
+
+        if(event.originalEvent.target.tagName != 'I' && event.originalEvent.target.tagName !='SPAN'){
+          //if not clicked on I element (icon ) then open panel
+         
+        
+          $('.hiddenFields').each(function() {
+            
+            $(this).closest('tr').removeClass('highlight');
+           });
+          
+          $('.hiddenFields').each(function() {
+           
+            if($(this).attr('data')==event.data.id){
+              $(this).closest('tr').addClass('highlight');
+             }
+          
+          });
+
+         
+     
+
+        //open panel      
+        this.getDocumentDetails();
+
+               
+        if(this.tripImages==''){
+            this.picturesTabShow= false;  
+            this.activeTab=0;  
+         } else{
+           this.picturesTabShow= true;    
+        }
+
+
+        }
+      },
+      openDialogAddPhoto(){
+        this.displayUploadModal = true;
+      },
+
+      customUploader(event){
+          var timestamp = Date.now();
+          var selectedFile = event.files[0]  ; // for now only one file
+        //  this.convertToBinary(selectedFile, selectedFile.name);   
+         this.uploadImage(selectedFile,timestamp+'_'+selectedFile.name);  
+          
+      },
+
+  /*     async convertToBinary(file, filename) {
+         
+            const reader = new FileReader();
+            reader.readAsBinaryString(file);
+            await new Promise(resolve => reader.onload = () => resolve());
+            
+            var binary = reader.result
+           
+            this.uploadImage(binary,filename);
+          
+            
+       },*/
+
+
+       async uploadImage(binary,filename){
+          //FINNALY !! it works :)
+           //  alert(binary )
+          //   alert(filename);
+            this.isLoading = true; 
+             
+            const sessionId=this.$store.getters.token;
+            const baseUrl =this._rootRestUrl;
+            const tripId =this.ClickedRowId;
+          
+
+
+
+         //   let formData = JSON.stringify({ Key: '', 'TripId':tripId, FileName:filename, SessionId: sessionId,File: binary });
+            let config = {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+
+            };
+
+                     
+            var formData = new FormData();
+            formData.append("Key", "");
+            formData.append("Caption", filename);
+            formData.append("SnagRef", tripId);
+            formData.append("ProjectRef",this.ProjectRef);
+            formData.append("SessionId", sessionId);
+            formData.append("File", binary);
+
+
+              
+     
+      try {  
+       await axios
+            .post(baseUrl + "/api/Attachments/InsertPhoto", formData, config)
+            .then(() => {
+              
+             
+              this.displayInfoDialog= true;
+              this.InfoModalHeader='Info';
+              this.InfoModalMessage='Photo is added';
+              this.isLoading = false; 
+              this.displayUploadModal = false;
+              // console.table(response);
+              this.getSnags();
+         
+           })   ;        
+      
+          } catch (error) {
+         // alert(error)
+
+                  this.displayInfoDialog= true;
+                    this.InfoModalHeader='Alert!';
+                    this.InfoModalMessage='Error occured while uploading photo. Photo is not added!';
+                    this.isLoading = false; 
+                    this.displayUploadModal = false;
+                    this.getSnags();
+
+          }    
+
+             
+           // after every request 
+           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+
+       },
+       setInvoiceDateToday(){
+         this.invoiceDate =  moment().format('DD/MM/YYYY HH:mm');
+         this.sendInvoiceDialog=true;
+       },
+
+       invoiceThisTrip(){
+
+        var AllOk = true;
+
+          if(this.invoiceDate == ''){
+            this.invoiceDateOK = false;
+            AllOk = false;
+          }else{this.invoiceDateOK = true;}
+
+          if(AllOk == true){
+              this.markAsInvoicedInDatabase();
+          }
+
+       },
+
+
+       invoiceMultipleTrips(){
+
+       
+
+        var AllOk = true;
+
+          if(this.invoiceDate == ''){
+            this.invoiceDateOK = false;
+            AllOk = false;
+          }else{this.invoiceDateOK = true;}
+
+          if(AllOk == true){
+              this.markAsInvoicedMultipleInDatabase();
+          }
+
+        },
+
+
+
+    async  markAsInvoicedInDatabase(){
+         // this.panelClass = 'closedPanel';   
+          this.isLoading = true;  
+         
+          var Date = this.format_date(moment(this.invoiceDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
+
+          const sessionId=this.$store.getters.token;
+          const baseUrl = this._rootRestUrl;
+                  
+          let formData = JSON.stringify({tripKey:this.ClickedRowId,sessionId:sessionId,date:Date,isInvoiceSent:true});
+       
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            }};
+         
+
+         await  axios
+            .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.displayInfoDialog= true;
+               this.sendInvoiceDialog=false;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Trip is marked as invoiced';
+               this.isLoading = false; 
+
+               this.checkedIDs = [];
+               this.AllPageMarked = false;
+           })
+            
+             .catch(function (error) {
+              // handle error
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+                console.table(error);
+
+                this.sendInvoiceDialog=false;
+                   this.InfoModalHeader='Error!';
+                   this.InfoModalMessage=error.response.data;
+                   this.infoDialogStyle=[{ width: '40rem' }];
+                   this.displayInfoDialog= true;
+                this.isLoading = false; 
+              });
+            
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+        
+       },
+
+
+    async   markAsInvoicedMultipleInDatabase(){
+
+         // this.panelClass = 'closedPanel';   
+         this.isLoading = true;  
+         
+         var Date = this.format_date(moment(this.invoiceDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
+
+         const sessionId=this.$store.getters.token;
+         const baseUrl = this._rootRestUrl;
+                 
+        
+   
+              
+          var jsonString='{"sessionId": "'+sessionId+'",';
+             jsonString+='     "invoices": [ ';
+               
+             var a=0;
+             var collectIDsToRemoveChecked = [];
+             this.selectedIDsForInvoicing.forEach((aID) => {
+              collectIDsToRemoveChecked.push(aID);
+              a++
+              jsonString+='{';
+                jsonString+='"tripKey": "'+aID+'",';
+                jsonString+='"isInvoiceSent": true,';
+                jsonString+='"invoiceDate": "'+Date+'"';
+              jsonString+='}';
+              if(a<this.selectedIDsForInvoicing.length){
+                jsonString+=',';
+              }
+
+            });    
+              
+
+             jsonString+='  ]';
+           jsonString+='  }';
+
+       
+
+        let formData = jsonString;
+
+
+         let config = {
+           headers: {
+             "Content-Type": "application/json",
+           }};
+        
+
+      await  axios
+           .post(baseUrl + "/api/v1/Trip/MarkInvoicesAsSent",formData, config )
+           .then(() => {
+                               
+              this.getSnags();
+              this.getCompanies();
+              this.displayInfoDialog= true;
+              this.sendMultipleInvoiceDialog=false;
+              this.showInvoiceSelectedButton=false;
+              this.InfoModalHeader='Info';
+              this.InfoModalMessage='Trips are marked as invoiced';
+              this.isLoading = false; 
+
+              //remove checkbox
+              collectIDsToRemoveChecked.forEach((aID) => { 
+               this.checkedIDs[aID]=false;
+           
+              //remove ID from array
+              const index = this.selectedIDsForInvoicing.indexOf(aID);
+              this.selectedIDsForInvoicing.splice(index, 1);     
+               
+              });
+
+             
+
+            
+
+
+          })
+           
+            .catch(function (error) {
+             // handle error
+                          
+               console.table(error);
+
+               this.sendInvoiceDialog=false;
+                  this.InfoModalHeader='Error!';
+                  this.InfoModalMessage=error.response.data;
+                  this.infoDialogStyle=[{ width: '40rem' }];
+                  this.displayInfoDialog= true;
+                  this.isLoading = false; 
+             });
+          
+            this.AllPageMarked=false;
+            this.AllMarked=false;
+
+          // after every request 
+          // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+       },
+
+
+      async unInvoiceThisTrip(){
+          
+        //this.panelClass = 'closedPanel';   
+          this.isLoading = true;  
+                          
+          const sessionId=this.$store.getters.token;
+          const baseUrl = this._rootRestUrl;
+                  
+          let formData = JSON.stringify({tripKey:this.ClickedRowId,sessionId:sessionId,date:'',isInvoiceSent:false});
+       
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            }};
+         
+
+          await axios
+            .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
+            .then(() => {
+                                
+               this.getSnags();
+               this.getCompanies();
+               this.editSnagDialog=false;
+               this.displayInfoDialog= true;
+               this.displayUnInvoiceConfirm=false;
+               this.InfoModalHeader='Info';
+               this.InfoModalMessage='Trip is marked as invoiced';
+               this.isLoading = false; 
+           })
+            
+             .catch(function (error) {
+              // handle error
+                 
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+                console.table(error);
+
+                this.displayUnInvoiceConfirm=false;
+                   this.InfoModalHeader='Error!';
+                   this.InfoModalMessage=error.response.data;
+                   this.infoDialogStyle=[{ width: '40rem' }];
+                   this.displayInfoDialog= true;
+                this.isLoading = false; 
+              });
+
+           // after every request 
+           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+       },
+        
+          
+      async getDocumentDetails(){
+         
+      
+        
+        const baseUrl = this._rootRestUrl;
+          
+          let formData = JSON.stringify({ key: this.ClickedRowId });
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+            this.isLoading = true;
+
+           await axios
+            .get(baseUrl + "/api/Snags/GetSnagDetails/?snagKey="+this.ClickedRowId , formData, config)
+            .then((response) => {
+             
+              this.snagDetails = response.data;
+              this.isLoading = false;  
+              this.fillPanelData();
+             
+           })
+            
+             .catch(function (error) {
+              // handle error
+           
+
+              if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+              console.table(error);
+             
+                this.displayInfoDialog=true;
+                this.InfoModalHeader='Error!';
+                this.InfoModalMessage='An error occured while getting snag details!';
+                this.isLoading = false; 
+            
+              
+            });
+            
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+            this.isLoading = false;
+
+       
+
+       
+         
+       },
+
+       fillPanelData(){
+
+        this.snagDetailsData  = this.snagDetails['snag'];
+       
+        //picturesTabShow
+       
+        var snagPictures = this.snagDetails['snagAttachments'];
+
+       
+        if (snagPictures.length >0){
+          
+         this.tripImages = snagPictures;
+                    
+          
+          
+          this.picturesTabShow = true;
+        }else{
+          this.picturesTabShow = false;
+          this.tripImages = [];
+        }
+
+         
+       
+        this.openPanel();
+
+
+       },
+
+
+
+      openPanel(){
+        this.panelClass = 'openedPanel';
+      },
+
+      closePanel(){
+        this.panelClass = 'closedPanel';
+      },
+
+    
+      initFilters1() {
+            this.filters1 = {
+               'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
+               'userFullName':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'from': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'to': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'companyName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'cargoName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'distance': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'sumVAT': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'comments': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}
+               
+            }
+        },
+
+        clearFilter1() {
+            this.initFilters1();
+        },
+
+      getFiles() {
+      /*  $("#datatable").DataTable({
+              lengthMenu: [
+                [25, 50, 100, -1],
+                [25, 50, 100, "All"],
+              ],
+              pageLength: 25,
+            });*/
+    },
+    format_date(value, pattern) {
+      if (value) {
+        return moment(String(value)).format(pattern);
+      }
+    },
+    showloader(event){
+        this.isLoading = event;
+       
+    },
+   async downloadReport(){
+     
+         this.getSnags();
+         this.isLoading = true;  
+         
+
+        //get selected dates
+        if (this.fromDate.length!=10){
+            this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
+        }
+
+        if (this.toDate.length!=10){
+            this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
+        }
+
+         const fromDateFull = this.format_date_to_full(this.fromDate, '00:00:00');
+         const toDateFull = this.format_date_to_full(this.toDate,'23:59:59');
+
+         const sessionId=this.$store.getters.token;
+         const DateFrom=fromDateFull;
+         const DateTo= toDateFull;
+  
+         const baseUrl = this._rootRestUrl;
+        
+        
+        // const locale = this.userLocale;
+           const locale = 'EN'; //for now, locale set to EN so that CSV is comma separated
+     
+      
+
+        let formData = JSON.stringify({ sessionId: sessionId, DateFrom:DateFrom , DateTo:DateTo , locale:locale});
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+         await  axios
+            .get(baseUrl + "/api/v1/Trip/CSV/Trips/?sessionId="+sessionId+"&DateFrom="+DateFrom+"&DateTo="+DateTo+"&locale="+locale, formData, config)
+            .then((response) => {
+               this.downloadedReport = response.data;
+               
+
+               var fileName = 'Report '+this.format_date(DateFrom, 'YYYY-MM-DD')+" - "+this.format_date(DateTo, 'YYYY-MM-DD');
+               this.downloadCSV(this.downloadedReport, fileName);
+              
+            })           
+             .catch(function (error) {
+                // handle error
+                this.isLoading = false; 
+                
+                if(error.response.status=='401') { //not authorized, token expires
+                 localStorage.clear();
+                 // document.location = '/';
+              }
+
+
+             });
+
+          // after every request 
+          // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+
+    },
+
+    
+
+    correctData(){
+
+        this.allSnags.forEach((value,index) => {
+
+
+
+        const entries = Object.entries(value);
+
+        entries.forEach((value2) => {
+              
+              if(value2[0]=='invSent'){
+                  var newType = '';
+                  if(value2[1]==true){
+                      newType="Yes";
+                  }else{
+                      newType="No";
+                  }
+                  this.allSnags[index]['invSent']=newType;
+              }
+            
+          
+
+
+
+              
+        });
+
+
+        });
+
+     },
+
+    downloadCSV(csvString,filename){
+          
+          const element = document.createElement("a");
+
+          element.setAttribute("href", `data:text/csv;charset=utf-8,${csvString}`);
+          element.setAttribute("download", filename);
+          element.style.display = "none";
+
+          document.body.appendChild(element);
+          element.click();
+          document.body.removeChild(element);
+          this.isLoading = false; 
+    },
+
+    formatMoney(number, decPlaces, decSep, thouSep, symbol) {
+        decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
+        decSep = typeof decSep === "undefined" ? "." : decSep;
+        thouSep = typeof thouSep === "undefined" ? "," : thouSep;
+        var sign = number < 0 ? "-" : "";
+        var i = String(parseInt(number = Math.abs(Number(number) || 0).toFixed(decPlaces)));
+        var j = (j = i.length) > 3 ? j % 3 : 0;
+
+        return symbol + " " + sign +
+            (j ? i.substr(0, j) + thouSep : "") +
+            i.substr(j).replace(/(\decSep{3})(?=\decSep)/g, "$1" + thouSep) +
+            (decPlaces ? decSep + Math.abs(number - i).toFixed(decPlaces).slice(2) : "");
+    },
+
+
+    showContextMenu: function (e) {
+       
+          //show right click menu only for admin
+          if(this.userType.toUpperCase()=='ADMIN'){
+            
+              e.preventDefault();
+              var menu = document.getElementById("div-context-menu");
+              menu.style.left = e.pageX + 'px'
+              menu.style.top = (e.pageY - 50) + 'px'
+              menu.style.display = 'block'
+              menu.cid = e.target.id.replace(/title-/,"")
+            
+          }  
+
+        }
+        , hideContextMenu: function () {
+           document.getElementById("div-context-menu").style.display = "none"
+        },
+
+        onClick: function () {
+         this.hideContextMenu();
+        },
+
+        onPage(event){
+
+          this.snagsPage = ((event['originalEvent']['page'])*1) + 1;
+          this.getSnags();
+        
+        
+        },
+
+        onSearchInput(){
+        
+          if(this.searchQuery.length==0){
+            this.first=0;
+            this.snagsPage = 1;
+            this.getSnags();
+          }
+        },
+
+        onSearch(){
+
+          if(this.searchQuery.length > 2 || this.searchQuery.length==0){
+            this.first=0;
+            this.snagsPage = 1;
+            this.getSnags();
+          }
+        },
+
+        onFilter(event){
+          
+         
+          this.captionFilter = '';
+          this.codeFilter = '';
+
+          var captionFilterJson =  event.filters.caption.constraints;
+         
+            captionFilterJson.forEach((value) => {
+                if(value['value']!=''  && value['value']!=null){
+                    this.captionFilter = value['value'];
+                }
+            });
+
+          var codeFilterJson =  event.filters.code.constraints;
+          
+            codeFilterJson.forEach((value) => {
+                if(value['value']!='' && value['value']!=null){
+                    this.codeFilter = value['value'];
+                }
+            });
+
+        this.getSnags();
+
+        },
+
+
+       async SelectAllPage(){
+          var whatToDo = '';
+         
+         /// collect all ID of all checkboxes:
+                var collectIDsToAdd = [];
+                this.selectedIDsForInvoicing = [];
+                $('.p-checkbox').each(function() {
+                  var id=$(this).parent().attr('data');
+                   collectIDsToAdd.push(id);
+                   
+                 });
+            //--------------
+
+          if(this.AllPageMarked == false){
+               whatToDo = 'mark';
+               this.showInvoiceSelectedButton=true;
+          }else{
+               whatToDo = 'unmark';
+               this.showInvoiceSelectedButton=false;
+          }
+
+
+           if(whatToDo=='mark'){ 
+                collectIDsToAdd.forEach((aID) => { 
+                this.selectedIDsForInvoicing.push(aID);
+                this.checkedIDs[aID]=true;
+                this.AllPageMarked = true;
+            });
+           }else{
+             this.checkedIDs = [];
+             this.AllPageMarked = false;
+           }
+
+          
+
+        },
+
+        SelectAll(whatToDo){
+       
+                  
+          if(whatToDo=='select'){
+            if(this.AllMarked == false){
+               this.showInvoiceSelectedButton=true;
+             
+            }else{
+                 this.showInvoiceSelectedButton=false;
+           }
+            }else{
+              //just unselect all
+              this.selectedIDsForInvoicing = [];
+              this.checkedIDs = [];
+              this.AllMarked = false;
+              this.AllPageMarked = false;
+              this.showInvoiceSelectedButton=false;
+            }
+
+            
+            this.selectedIDsForInvoicing = [];
+             
+            
+
+              if(whatToDo=='select'){ 
+                  this.AllMarked = true;
+                  this.allSnags.forEach((value) => {
+
+                    const entries = Object.entries(value);
+
+                    var  rememberID= '';
+                    entries.forEach((value2) => {
+                        
+                        if(value2[0]=='id'){
+                          rememberID = value2[1];
+                        }
+                      
+                        if(value2[0]=='invSent'){
+                            // var newType = '';
+                           
+                            if(value2[1]=='No'){
+                                //
+                                  this.selectedIDsForInvoicing.push(rememberID);
+                                  this.checkedIDs[rememberID]=true;
+                              }
+                            
+                          }
+                        
+                          
+                      });
+
+
+                    });
+
+             }
+
+              if(this.selectedIDsForInvoicing.lenght>0){
+                this.showInvoiceSelectedButton=true;
+              }
+                        
+        },
+
+  },
+  
+  mounted() {
+
+  
+    //on click anywhere close context menu 
+    var el=document.getElementById('app');
+    el.addEventListener('click', this.onClick);
+
+
+    // get dates from localstorage if exists so it remembers when changing tabs:
+    // if not exists then means user just enters the application so give me this week dates
+
+        if(localStorage.getItem('fromDate')!=undefined){
+            this.fromDate = localStorage.getItem('fromDate');
+        }else{
+            this.fromDate = moment().startOf('isoWeek').format('DD/MM/YYYY');
+        }
+      
+        if(localStorage.getItem('toDate')!=undefined){
+            this.toDate = localStorage.getItem('toDate');
+        }else{
+            this.toDate  = moment().endOf('isoWeek').format('DD/MM/YYYY');
+        }
+    
+     //  ------ end default dates  -------- / 
+       
+
+
+     this.$emit("showSearchbar", true);
+
+   /* if (this.$store.getters.getUserType==null || this.$store.getters.getUserLocale == null){
+        //we don't have usertype so user is not properly login, logout him and try again
+        localStorage.clear();
+        // document.location = '/';
+    }*/
+    
+     this.getSnags();
+     this.getCompanies();
+     this.moveSearchBoxToTop();
+
+
+   /*   if(this.$store.getters.getUserType != null){
+        this.userType = (this.$store.getters.getUserType).toUpperCase();
+      }else{
+        this.userType = 'USER';
+      }*/
+
+  /*    if(this.$store.getters.getUserLocale != null){
+        this.userLocale = (this.$store.getters.getUserLocale).toUpperCase();
+      }else{
+        this.userLocale = 'EN';
+      }*/
+
+
+     
+     $("#editIconsPanel").detach().appendTo('.p-tabview-nav-content');
+     
+  },
+
+   created() {
+    
+    this.aSystemDoc = localStorage.getItem("docType");
+    this.initFilters1();
+    this.loading1 = false;
+   
+    },
+
+  
+
+
+
+};
+</script>
+
+<style>
+@import "datatables.net-dt";
+@import "primevue/resources/themes/bootstrap4-light-blue/theme.css"; /*theme*/
+@import "primevue/resources/primevue.min.css   "; /*core css*/
+@import "primeicons/primeicons.css   "; /*icons*/
+
+/* ---------------------- */
+
+.p-datatable {
+  font-size: 0.9rem;
+}
+/*.p-datatable tbody tr:nth-child(even) {
+  background: #f4f4f4;
+}
+.p-datatable tbody tr:nth-child(odd) {
+  background: #fff;
+}*/
+
+.p-datatable tbody tr:hover {
+  background: #f1f1ff !important;
+  cursor: pointer;
+}
+
+.p-datatable thead tr th {
+  border-bottom: 1px solid #ddd !important;
+  font-size: 14px;
+  padding: 6px !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  /*background: #fca !important;*/
+}
+.p-datatable tbody tr td {
+  border-bottom: 1px solid #ddd !important;
+  font-size: 14px;
+  padding: 6px !important;
+}
+.p-sortable-column-icon {
+  font-size: 12px;
+}
+
+.p-datatable-footer {
+  padding: 2px !important;
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  background: #fca !important;
+}
+
+
+.pi-filter-icon, .pi-filter-slash {
+  font-size:12px
+  }
+  .p-column-filter-menu{margin-left:0}
+
+  .p-column-filter-menu-button{margin-left:0.1rem;}
+.p-column-filter-menu-button-active{width:24px;height:24px}
+
+/* ---------------------- */
+
+
+        .p-progressbar {
+            height: .5rem;
+            background-color: #D8DADC;
+        }
+        .p-progressbar .p-progressbar-value {
+            background-color: #607D8B;
+        }
+
+        .p-datepicker {
+            min-width: 25rem;
+        }
+
+        .p-datepicker td {
+            font-weight: 400;
+        }
+
+        .p-datatable.p-datatable-customers .p-datatable-header {
+            padding: 1rem;
+            text-align: left;
+            font-size: 1.5rem;
+        }
+
+        .p-datatable.p-datatable-customers .p-paginator {
+            padding: 1rem;
+        }
+
+        .p-datatable.p-datatable-customers .p-datatable-thead > tr > th {
+            text-align: left;
+        }
+
+        .p-datatable.p-datatable-customers .p-datatable-tbody > tr > td {
+            cursor: auto;
+            border-bottom:none !important;
+        }
+
+        .p-datatable.p-datatable-customers .p-dropdown-label:not(.p-placeholder) {
+            text-transform: uppercase;
+        }
+
+        .p-button{background:#138BA7 !important;border-color: #138BA7 !important;}
+        .p-button:hover{background:#263a4f !important;border-color: #263a4f !important;}
+        .p-button.p-button-outlined{color:white;}
+        .p-button.p-button-outlined:enabled:hover{color:white;background:#263a4f !important;border-color: #263a4f !important;}        
+       
+ 
+#searchBox{width:80%}
+#searchBox .p-inputtext{width:100%}
+
+.p-datatable-header #searchBox{display:none}
+.dateDisplayInput{height:34px;margin-left:6px}
+
+.p-datatable .p-sortable-column .p-sortable-column-icon{color:white}
+.p-datatable .p-sortable-column:not(.p-highlight):hover .p-sortable-column-icon{color:white}
+.p-datatable .p-sortable-column.p-highlight:hover .p-sortable-column-icon{color:white}
+.p-button.p-button-text, .p-button.p-button-text:enabled:hover{color:white}
+.p-datatable .p-sortable-column.p-highlight .p-sortable-column-icon{color:white}
+
+#refreshButton{margin-left:6px;height:34px;}
+#newSnagButton, #downloadReport, #invoiceSelected{margin-left:0;height:34px;}
+.p-datatable .p-datatable-header {background: none;border:none}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  text-align: left;
+  border: 1px solid #dee2e6;
+  border-width: 0 0 0 0;
+  padding: 1rem 1rem;
+}
+.p-datatable-header{padding-left:0 !important;padding-right:0 !important;padding-top:7px !important}
+.p-paginator-current{border:0 !important;color:#333 !important;font-size: 0.9rem;}
+.p-paginator-bottom{padding-left:0 !important;padding-right:0 !important}
+
+.actionsColumns{display:table-cell !important;text-align: right !important ;width:50px !important}
+th.actionsColumns{display:flex !important}
+
+/*.p-column-header-content{display:block}*/
+
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: #138BA7;
+  border-color: #138BA7;
+  color: #ffffff;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  color: #333;
+  min-width: 2.357rem;
+  height: 2.357rem;
+  margin: 0 0 0 -1px;
+  transition: box-shadow 0.15s;
+  border-radius: 0;
+}
+
+.p-disabled{color:#ccc !important;}
+
+
+
+.RightSidepanel {
+height:100%; 
+width:0;
+max-width:100%;
+position: fixed; 
+z-index: 1; 
+top: 0;
+right: 0px;
+background-color: #f5f5f5; 
+overflow-x: hidden; 
+padding-top: 15px; 
+padding-right:0px;
+padding-left:0px;
+transition: 0.5s;
+box-shadow: 0px 20px 7px #cccccc;
+z-index:11;
+}
+.RightSidepanel .closebtn {
+z-index:1000;
+position: absolute;
+top: 0;
+right: 35px;
+font-size: 36px;
+margin-left: 50px;
+color:#343434;
+text-decoration:none;
+}
+.closedPanel{width:0px}
+.openedPanel{width:750px}
+
+.cursorHand {cursor:pointer}
+.closePanelButton{margin-right:20px}
+
+#detailsTable {font-size:0.9rem;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";}
+#detailsTable td {text-align: left;}
+
+.p-tabview .p-tabview-panels{
+  background-color: unset;
+  border-left:1px solid #ccc;
+  border-bottom:1px solid #ccc;
+  border-right:1px solid #ccc;
+  border-top:none !important;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {border:1px solid #ccc}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  border: 1px solid #ccc;
+  top: 1px;
+}
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: #f5f5f5;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:not(.p-disabled):focus {box-shadow: none;}
+
+.p-datatable .p-datatable-tbody > tr:focus {
+  outline: none;
+ 
+}
+
+#editIconsPanel{
+  top: 0px;
+  position: absolute;
+  right: 0px;
+}
+.actionIcons{cursor: pointer;}
+.RightSidepanel .row {margin:0}
+
+.swiperSlideHolder img {cursor: zoom-in;}
+
+.highlight td {background:#ccf}
+
+
+.insertFormRow .p-inputtext{padding:3px}
+.insertFormRow {padding:6px;}
+.insertFormRow {background:#fff}
+.insertFormRow.even {background:#f3f3f3}
+
+.p-dialog-content{height:unset;overflow-y: auto;}
+.redButton{background-color:darkred !important}
+.redButton:hover{background-color:rgb(82, 15, 15) !important}
+#formContainer{font-size:0.9rem !important;}
+
+.p-inline-message.p-inline-message-error {padding:4px;margin-left:4px;}
+
+.p-datepicker table td {
+  padding: 1px;
+}
+
+.p-datepicker table td > span {width:1.6rem;height:1.6rem}
+.p-datepicker {width:300px !important;box-shadow: 0px 6px 12px #ddd  !important}
+.p-dropdown-panel{max-width:400px !important;box-shadow: 0px 6px 12px #ddd  !important}
+.p-dropdown-panel .p-dropdown-header{padding:0.4rem;}
+.p-dropdown-panel .p-dropdown-items .p-dropdown-item{padding:0.1rem 0.7rem;}
+.p-dropdown-filter{padding:3px}
+.p-dropdown,.p-inputtext{width:230px}
+
+.addphotobutton{margin-left: 0;  height: 34px;}
+
+.p-fileupload-filename{width:100% !important}
+.p-paginator-rpp-options{width:100px}
+.p-button-label{text-align:left;}
+
+.invoiceButtonHolder{
+  display: inline-block;
+  margin-right: 140px;
+  position: relative;
+  
+}
+.invoiceButton{
+  padding: 3px;
+  margin-top: 4px;
+}
+
+.p-column-filter-menu-button:focus {
+  outline: 0 none;
+  outline-offset: 0;
+  box-shadow: 0 0 5px 0.01rem rgba(255, 255, 200, 0.9);
+}
+
+.p-datatable .p-sortable-column:focus {
+  box-shadow: unset;
+  outline: 0 none;
+}
+
+.p-column-filter-menu-button.p-column-filter-menu-button-active, .p-column-filter-menu-button.p-column-filter-menu-button-active:hover {
+  background: #d2d2d2;
+  color: #000 !important;
+}
+
+/*.p-column-filter-menu-button {
+  background: #eee;
+  color: #000 !important;
+}
+
+.p-column-filter-menu-button:hover {
+  background: #ddd !important;
+  color: #000 !important;
+}*/
+
+
+.p-button-label{padding-bottom:3px}
+
+.actionButtonsHolder{
+  display: inline-block;
+  top: -3px;
+  position: relative;
+  right: 0;
+  padding-bottom: 3px;
+}
+
+.cls-context-menu {
+           display:none;
+           position:absolute;
+        }
+        .cls-context-menu ul, #context-menu li {
+            list-style:none;
+            margin:0; padding:0;
+            background:white;
+        }       .cls-context-menu {z-index:900;background:white; border:solid 1px #CCC;box-shadow: 1px 3px 10px #CCC;  padding: 4px;}
+        .cls-context-menu li {
+           border-bottom:solid 1px #CCC;
+           display:block;
+           /*padding:5px 12px;*/
+           text-decoration:none;
+           color:#444;
+           cursor:pointer;
+        }
+
+        .cls-context-menu li a {padding:5px 12px;display:block;}
+
+        .cls-context-menu li:hover{
+            background: #138BA7 !important;
+            color: #FFF;
+        }
+        .cls-context-menu li:last-child { border:none; }
+
+        .context-menu-icon {
+          top: 1px;
+          position: relative;
+          margin-right: 2px;
+        }
+        .cls-context-menu-item {
+          cursor: pointer;
+          display:block;
+          padding:20px;
+          background:#ECECEC;
+        }
+
+        .p-button.p-button-danger.p-button-text, .p-buttonset.p-button-danger > .p-button.p-button-text, .p-splitbutton.p-button-danger > .p-button.p-button-text  {color:white !important;}
+
+
+        .actionButtonsHolderTable{
+          display: flex;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+        }
+       .actionButtonsHolderTable div {
+        align-self: center;
+          
+
+          
+        }
+      
+    /*    .p-datatable thead tr th.p-filter-column{background:#FFF !important}*/
+
+</style>
+
+

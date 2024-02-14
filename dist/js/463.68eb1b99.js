@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkSnags"]=self["webpackChunkSnags"]||[]).push([[463],{7463:function(n,e,t){t.r(e),t.d(e,{default:function(){return f}});var r=t(3396),s=t(7139);const a={class:"alignBootmLeftAtPage align-middle text-center"};function i(n,e){return(0,r.wg)(),(0,r.iD)("div",a," Version: "+(0,s.zw)(n._rootVersion),1)}var o=t(89);const c={},u=(0,o.Z)(c,[["render",i]]);var f=u}}]);
+//# sourceMappingURL=463.68eb1b99.js.map

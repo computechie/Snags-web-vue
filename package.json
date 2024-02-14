@@ -1,6 +1,6 @@
 {
-  "name": "transport",
-  "version": "1.0.4",
+  "name": "Snags",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

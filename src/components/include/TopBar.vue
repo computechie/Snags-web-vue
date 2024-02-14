@@ -6,13 +6,15 @@
   >
     <div class="container-fluid" style="position: relative">
       <div class="row align-items-center topLoginBarRow">
-        <div class="col-9 col-md-4" v-if="!this.$store.getters.isAuthenticated">
-          <img :src="_rootLoginLogoWhite" class="imf-fluid" />
+        
+        <div class="col-9 col-md-4" v-if="this.$store.getters.isAuthenticated">
+          <!-- <img :src="_rootLoginLogoWhite" class="imf-fluid" /> -->
+          <img :src="_rootLoginLogo" class="imf-fluid" />
         </div>
 
         <div
           class="col-9 col-md-4"
-          v-if="this.$store.getters.isAuthenticated"
+          v-if="!this.$store.getters.isAuthenticated"
           style="padding-left: 0"
         >
           <button
@@ -28,7 +30,7 @@
         </div>
 
         <div
-          v-if="!this.$store.getters.isAuthenticated"
+          v-if="this.$store.getters.isAuthenticated"
           class="d-none d-md-block col-md-4 text-center"
         >
           <span
@@ -40,7 +42,7 @@
         </div>
 
         <div
-          v-if="this.$store.getters.isAuthenticated"
+          v-if="!this.$store.getters.isAuthenticated"
           class="col-md-4 text-center"
         >
           <span

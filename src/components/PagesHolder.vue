@@ -38,8 +38,8 @@
     >
       <div class="sidebarTopMenu" v-bind:class="{ textcenter: isCentered }">
         <menu-link
-          atitle="Trips list"
-          link="/pages/trips"
+          atitle="Snags"
+          link="/pages/snags"
           icon="fa-solid fa-list"
           iconsize="21"
           :isActive="isActive"
@@ -430,7 +430,7 @@ export default {
             });
             
           // after every request 
-            this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+         //   this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.showExtendPopupDialog(); // extend timeout to show expire session dialog
             // ---------------------
          
@@ -440,7 +440,7 @@ export default {
     sessionExpired(){
       
        this.$store.dispatch('logout');
-       document.location = '/';
+    //   document.location = '/';
        
      },
 
@@ -457,7 +457,7 @@ export default {
   mounted() {
 
        //what app, dieffent sidebar manu links
-    this.userType = (this.$store.getters.getUserType).toUpperCase();
+   // this.userType = (this.$store.getters.getUserType).toUpperCase();
    
     window.addEventListener("resize", this.getDimensions);
 
@@ -484,7 +484,7 @@ export default {
     }
 
     //check if user is loggen in
-    this.$store.dispatch("autoLogin");
+  //  this.$store.dispatch("autoLogin");
 
     //on create (on load)
     // this.projects = projectsObject; // parsed json
@@ -625,7 +625,7 @@ a.router-link-active:hover {
 #extendSessionButton{
   margin:12px;
 }
-.backdrop{backdrop-filter: blur(2px);background-color:rgba(0, 0, 0, 0.7) !important}
+.backdrop{backdrop-filter: blur(2px);background-color:rgba(255, 255, 255, 0.0) !important}
 
 </style>
 

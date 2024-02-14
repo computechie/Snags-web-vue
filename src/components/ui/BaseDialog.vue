@@ -1,5 +1,5 @@
 <template>
-  <teleport to="body">
+ 
     <div v-if="show" @click="tryClose" class="backdrop"></div>
     <transition name="dialog">
       <dialog open v-if="show">
@@ -10,7 +10,7 @@
         
       </dialog>
     </transition>
-  </teleport>
+  
 </template>
 
 <script>
@@ -49,7 +49,7 @@ export default {
   left: 0;
   height: 100vh;
   width: 100%;
-  background-color: rgba(255, 255, 255,.5);
+  background-color: rgba(255, 255, 255,0.0);
   z-index: 9998;
 }
 

@@ -15,8 +15,8 @@ import LoginPage from "./components/LoginPage.vue";
 const PagesHolder = () => import("./components/PagesHolder.vue");
 
 //--Transport pages
-const TransportTrips= () => import("./components/pages/transport/TransportTrips.vue");
-const ManageUsers= ()    => import("./components/pages/transport/ManageUsers.vue");
+const PageSnags= () => import("./components/pages/snags/PageSnags.vue");
+const ManageUsers= ()    => import("./components/pages/snags/ManageUsers.vue");
 
 //--Password recovery pages
 const ResetPassword= ()    => import("./components/pages/ResetPassword.vue");
@@ -60,8 +60,10 @@ const router = createRouter({
 
   history: createWebHistory(""),
   routes: [
-    { path: "/", component: LoginPage, meta: { requiresUnAuth: true } },
-        {
+   // { path: "/", component: LoginPage, meta: { requiresUnAuth: true } },
+      { path: "/", component: PageSnags, redirect: "/pages/snags", },
+    
+    {
           path: "/resetPassword/:resetKey",
           component: ResetPassword,
           name:"ResetPassword",
@@ -89,10 +91,10 @@ const router = createRouter({
         // PAGES
         {
               
-            path: "/pages/trips",
-            component: TransportTrips,
-            name: "Trips",
-            meta: { requiresAuth: true }
+            path: "/pages/snags",
+            component: PageSnags,
+            name: "PageSnags",
+            meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
             
        
         },{
