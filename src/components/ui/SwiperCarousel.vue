@@ -155,9 +155,10 @@
       Button
     
     },
+    emits:['showloader', 'swiper', 'deletePhoto', 'deletePhotomodal'],
     setup() {
-      const onSwiper = (swiper) => {
-        console.log(swiper);
+      const onSwiper = () => {
+       // console.log(swiper);
        
        
       };
@@ -172,6 +173,7 @@
 
     data() {
       return {
+        thumbsSwiper:'',
         timestamp : Date.now(),
         swiper:'',
         defaultSlideTo : 0,
@@ -181,7 +183,7 @@
         visibleImagesModal: false,
         baseUrl : localStorage.getItem("_rootRestUrl"),
         methodName : '/api/Attachments/ViewPhoto',
-        methodNameDownload: '/api/v1/Trip/DownloadTripFile',
+        methodNameDownload: '/api/Attachments/DownloadPhoto',
         parameter : '?photoKey=',
         zoomedImageSource : '',
         zoomedImageClass : 'zoomedImage',
@@ -212,9 +214,9 @@
           URL.revokeObjectURL(link.href)*/
 
          const index=$('#'+this.zoomedImageId).attr('index');
-         const filename = this.tripImages[index]['fileName'];
+         const filename = this.tripImages[index]['caption'];
 
-         var downloadURL = this.baseUrl+this.methodName+this.parameter+this.zoomedImageId+'&='+this.timestamp;
+         var downloadURL = this.baseUrl+this.methodNameDownload+this.parameter+this.zoomedImageId+'&='+this.timestamp;
 
           axios.get(downloadURL, { responseType: 'blob' })
           .then(response => {

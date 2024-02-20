@@ -6,10 +6,10 @@
   </base-dialog>
 
 
-  <base-dialog  :show="showCountDownDialog" fixed  :style="{ width: '20rem' }">
+  <base-dialog  :show="showCountDownDialog" fixed  >
     <div id="timerDialog"  class="text-center">
         <h5>Your session will expire soon!</h5>
-        <vue3-flip-countdown :showDays="false" :showHours="false"  mainColor="#e2e2e2" secondFlipColor="#ffffff" mainFlipBackgroundColor="#147d95" secondFlipBackgroundColor='#138BA7'  :deadline="deadline" @timeElapsed="sessionExpired()"/>  
+        <vue3-flip-countdown :showDays="false" :showHours="false"  mainColor="#e2e2e2" secondFlipColor="#ffffff" mainFlipBackgroundColor="#147d95" secondFlipBackgroundColor='#730e27'  :deadline="deadline" @timeElapsed="sessionExpired()"/>  
         <button class="btn btn-primary" id="extendSessionButton" @click="closeTimeDialog">Keep alive</button>
     </div> 
   </base-dialog>      
@@ -132,6 +132,7 @@ export default {
   },
   data() {
     return {
+      countdownSize:'width:20rem',
       deadline:'2023-12-25 00:00:00',
       timerExtend:'',
       showCountDownDialog:false,
@@ -544,7 +545,7 @@ a.router-link-active:hover {
 }
 a.router-link-active,
 a.router-link-active:hover {
-  background: #138BA7;
+  background: #730e27;
   color: #fff !important;
 }
 .divider,
@@ -607,7 +608,7 @@ a.router-link-active:hover {
 #mainProjectTitle h5{font-size:14px}
 
 .p-datatable thead tr th{
-  background: #138ba7 !important;
+  background: #730e27 !important;
   color: white !important;
 }
 

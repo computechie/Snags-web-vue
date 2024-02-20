@@ -27,11 +27,12 @@
             
             @rowSelect="onRowSelect"
             @rowClick="onRowClick"
+            @rowsChange="onRows($event)"
             
 
             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
             paginatorStart="CurrentPageReport"
-            :rowsPerPageOptions="[25,50,100,250,500]" 
+            :rowsPerPageOptions="rowsPerPageOptions"
             responsiveLayout="scroll"
             currentPageReportTemplate="Showing {first} to {last} of total {totalRecords} snags"
             :globalFilterFields="['code','title' ]"
@@ -65,7 +66,9 @@
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label="Download Report"/>
                         &nbsp;
                         <Button v-if="showInvoiceSelectedButton && userType=='ADMIN'" style="min-width:120px" v-tooltip.bottom="{ value: 'Invoice selected', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-check-circle" class="p-button-text" id="invoiceSelected" @click="invoiceSelected" label="Invoice selected"/>
-                    
+                       
+                        <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Load all snags', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="getSnags('all')" label="Load all snags"/>
+                        &nbsp;
                     
                       </div>
                         
@@ -92,7 +95,7 @@
     
       <template #body="{ data }">
           {{format_date(data.date   ,'DD/MM/YYYY') }}         
-              
+          <span style="display: none;" class="hiddenFields" :data=data.key></span>    
           
         </template>
 
@@ -105,13 +108,17 @@
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
         </template>
     </Column>
-    <Column field="caption" header="Item"  bodyStyle="text-align: left"  style=";min-height:43px;min-width:320px">
+    <Column field="caption" header="Item"  bodyStyle="text-align: left"  style="text-align: left;min-height:43px;min-width:320px">
        
       <template #body="{ data }">
           <div style="display:inline-block;width:85%;padding-right:50px">{{data.caption}}
              
           </div>
-          <div  style="fdisplay:inline-block;display:block;width:15%" v-if="data.hasPhoto != ''"><i class="fa fa-camera"></i></div>
+          <div  style="display:inline-block;display:block;width:15%" v-if="data.hasPhoto != ''">
+            
+            <img v-if="data.caption=='Kitchen Units'" src="/images/pin.png" style="height:18px"> 
+            <img v-if="data.caption!='Kitchen Units'" src="/images/pin.png" style="height:18px;visibility:hidden"> 
+            <i class="fa fa-camera"></i></div>
 
         </template>
       
@@ -123,28 +130,47 @@
     
     </Column>
     <Column field="status" header="Status" bodyStyle="text-align: left"  style=";min-height:43px;">
-      <template #filter="{filterModel,filterCallback}">
-            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+      
+      <template #body="{ data }">
+          <div v-if="data.status=='Open'" class="statusOpen statusBlock">{{ data.status }}</div>
+          <div v-if="data.status=='Closed'" class="statusClosed statusBlock"  >{{ data.status }}</div>
+          <div v-if="data.status=='Actioned'" class="statusActioned statusBlock">{{ data.status }}</div>
+          <div v-if="data.status=='Returned'" class="statusReturned statusBlock">{{ data.status }}</div>
+
+          
+
+      </template>
+     
+      <template #filter="{filterModel}">
+          <!--<InputText v-model="filterModel.value" :options="allCompanies" filter optionLabel="name" placeholder="Select Company"></InputText>-->
+          <Dropdown v-model="filterModel.value" :options="allStatuses" filter optionLabel="name" optionValue="value" placeholder="Select Status"></Dropdown>
         </template>
+
+        
     </Column>
 
     <Column field="assignedTo" header="Action By"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
 
     
     <Column field="area" header="Location"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
-    <Column field="workpackage" header="Work Package"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+    <Column field="worksPackage" header="Works Package"  bodyStyle="text-align: left"  style=";min-height:43px;">
+      
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+        </template> 
+      </Column>
     
     <Column field="createdBy" header="Owner"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
 
-    <Column field="signOffDate" header="Closed Date" style="min-width: 10rem;min-height:43px;">
-    <template #body="{ data }">
-        {{format_date(data.closeddate   ,'DD/MM/YYYY') }}         
-            
+    
+    <Column field="closedBy" header="Closed By"  bodyStyle="text-align: left"  style="display: grid;min-height:43px;">
+      <template #body="{ data }">
+          <span class="closedByName">{{data.closedBy}}</span>
+          <span class="closedByDate"> {{format_date(data.signOffDate   ,'DD/MM/YYYY') }}  </span>   
         
       </template>
-
+    
     </Column>
-    <Column field="closedBy" header="Closed By"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
 
    
     <Column field="" header="" bodyStyle="text-align: left"  style=";min-height:43px;">
@@ -182,7 +208,7 @@
     
     </template>         
     <template #paginatorend>
-      
+    
     </template>  
     
 
@@ -210,42 +236,96 @@
         
         <div class="row">
           <div class="col text-center">
-            <h5 id="detailsHeadline">{{ tripCargoName }}</h5>
+            <h5 class="detailsHeadlineCode">{{ snagDetailsData.code }}</h5>
+            <h5 class="detailsHeadline">{{ snagDetailsData.caption }}</h5>
+
+           
+
+
           </div>
         </div>	
+        <div class="row">
+          <div class="col text-center">
+            <div :class="'statusBlock status'+snagDetailsData.status">{{ snagDetailsData.status }}</div>
+           
+          </div>
+        </div>
         
-       
+
+        <div class="text-end" id="editIconsPanel"> 
+
+          
+
+            <div class="actionButtonsHolder">
+
+           
+            <div   class="fa-stack fa-2x actionIcons" style="font-size:15px" v-tooltip.bottom="{ value: 'Edit snag', showDelay: 1000, hideDelay: 300 }" @click="editClick">
+
+                <i class="fa-solid fa-square fa-stack-2x"></i>
+                <i class="fa-stack-1x fa-solid fa-pen-to-square" style="color: white"></i>
+            
+            </div>
+
+
+            <div    class="fa-stack fa-2x actionIcons" style="font-size:15px;color:#aa0000" v-tooltip.left="{ value: 'Delete snag', showDelay: 1000, hideDelay: 300 }"  @click="deleteClick">
+              
+                <i class="fa-solid fa-square fa-stack-2x"></i>
+                <i class="fa-stack-1x fa-solid fa-trash-can" style="color: white"></i>
+            
+            </div>
+
+            </div>
+
+
+            </div>
+
                 
             
         <div class="row" style="">
           <div class="col text-center" style="padding:19px">
            
             <TabView v-model:activeIndex="activeTab">    
+              
               <TabPanel header="Details">
 
             <table class="table table-striped table-sm" id="detailsTable">
              
              <tbody>
               <tr>
-                <td style="width:160px">Assigneg To:</td>
+                <td style="width:160px">Date Opened:</td>
+                <td>{{ snagDetailsData.date }}</td>
+              </tr>
+              <tr>
+                <td style="width:160px">Action by:</td>
                 <td>{{ snagDetailsData.assignedTo }}</td>
               </tr>
 
               <tr>
-                <td>Title</td>
-                <td>{{ snagDetailsData.caption }}</td>
+                <td>Location:</td>
+                <td>{{ snagDetailsData.area }}</td>
               </tr>
 
               <tr>
-                <td>Code</td>
-                <td>{{ snagDetailsData.code }}</td>
+                <td>Works Package:</td>
+                <td>{{ snagDetailsData.worksPackage }}</td>
               </tr>
 
               <tr>
-                <td>Inspection No</td>
-                <td>{{ snagDetailsData.inspectionNo }}</td>
+                <td>Owner:</td>
+                <td>{{ snagDetailsData.createdBy }}</td>
+              </tr>
+
+              <tr>
+                <td>Closed by:</td>
+                <td>{{ snagDetailsData.closedBy }}</td>
               </tr>
            
+
+              <tr>
+                <td>Notes:</td>
+                <td><textarea rows="5" v-text="snagDetailsData.notes" style="width:100%" readonly></textarea></td>
+              </tr>
+
          
             </tbody>
             
@@ -253,15 +333,23 @@
            </table>
 
            <div class="row">
-                <div class="col text-end" style="padding:0">
-                  <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
+                <div class="col-md-6 text-left" style="padding:0">
+
+                  
+                  
                 </div>
-             </div>
+               
+                <div class="col-md-6 text-end" style="padding:0">
+                      <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
+                </div>
+            </div>
           
           </TabPanel>
+
+         
           
-          <TabPanel header="Pictures"  v-if="picturesTabShow">
-              <SwiperCarousel :tripImages="tripImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
+          <TabPanel :header="'Pictures (' +snagImages.length+')'"  v-if="picturesTabShow">
+              <SwiperCarousel :tripImages="snagImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
              
              <div class="row" style="margin-top:12px">
                 <div class="col text-end" style="padding:0">
@@ -270,18 +358,55 @@
              </div>
               
           </TabPanel>
+        
+          <TabPanel header="Drawing">
+              
+              <img src="/images/pindrawing.jpg">
+                 
+             </TabPanel>
 
+          
 
         </TabView>
+
+
+          
 
 
           </div>
         </div>
 
+<div class="historyHolder">
+    <div class="row">
+      <div class="col-md-12">
 
+        <Timeline :value="events" align="alternate">
+          
+          <template #marker="slotProps">
+            <span class="flex w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1" :style="{ backgroundColor: slotProps.item.color }">
+                <i :class="slotProps.item.icon"></i>
+            </span>
+        </template>
+
+             <template #content="slotProps">
+              <div class="mt-3">
+                  <div class="historyStatus">{{ slotProps.item.status }}</div>
+                  <div class="historyDate">{{ slotProps.item.date }}</div>
+                  <div class="historyName">{{ slotProps.item.createdBy }}</div>
+                  <div class="historyNotes"><textarea class="textAreaComments">Comments</textarea></div>
+              </div>
+                </template>
+          
+          </Timeline>
+
+
+      </div>
+    </div>
+
+  </div>
          <!-- zoomed image Dialog-->
         <Dialog modal v-model:visible="visibleImagesModal" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-          <SwiperCarousel :tripImages="tripImages"  @deletePhotomodal="deletePhotoModal"/>
+          <SwiperCarousel :snagImages="snagImages"  @deletePhotomodal="deletePhotoModal"/>
         </Dialog>
         
        
@@ -301,7 +426,7 @@
         <div class="container" id="formContainer">
           
           <div class="row insertFormRow align-items-center   even">
-            <div class="col-md-3"><label for="newSnagDate">Date *</label></div>
+            <div class="col-md-3"><label for="newSnagDate">Required by Date *</label></div>
             <div class="col-md-9">
               <Calendar   @change="changeDate('from')" style="margin-left:0" id="newSnagDate" class="dateDisplayInput" v-model="newSnagDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
             
@@ -314,20 +439,20 @@
          
           <div class="row insertFormRow align-items-center   ">
             <div class="col-md-3"><label for="newSnagTitle">Item *</label></div>
-            <div class="col-md-9"><InputText  @input="newSnagTitleOK=true" id="newSnagTitle" v-model="newSnagTitle" size="small"/>
+            <div class="col-md-9"><InputText  @input="newSnagTitleOK=true" id="newSnagTitle" v-model="newSnagTitle" />
             <InlineMessage v-if="!newSnagTitleOK">This field is required</InlineMessage></div>
           </div>
 
           <div class="row insertFormRow align-items-center  even ">
             <div class="col-md-3"><label for="newSnagCode">Code *</label></div>
-            <div class="col-md-9"><InputText   @input="newSnagCodeOK=true" id="newSnagCode" v-model="newSnagCode" size="small" />
+            <div class="col-md-9"><InputText   @input="newSnagCodeOK=true" id="newSnagCode" v-model="newSnagCode" />
             <InlineMessage v-if="!newSnagCodeOK">This field is required</InlineMessage></div>
           </div>
 
           <div class="row insertFormRow align-items-center   ">
             <div class="col-md-3"><label for="newSnagStatus">Status * </label></div>
             <div class="col-md-9">
-              <Dropdown v-model="newSnagStatus" :options="allStatuses" filter optionLabel="name" placeholder="Select Status"></Dropdown>
+              <Dropdown v-model="newSnagStatus" :options="allStatuses"  optionLabel="name" placeholder="Select Status"></Dropdown>
              
 
             <InlineMessage v-if="!newSnagStatusOK">This field is required</InlineMessage></div>
@@ -362,7 +487,7 @@
          <div class="container" id="formContainer">
            
            <div class="row insertFormRow align-items-center   even">
-             <div class="col-md-3"><label for="editSnagDate">Date *</label></div>
+             <div class="col-md-3"><label for="editSnagDate">Required by Date *</label></div>
              <div class="col-md-9">
               
               <Calendar :value="editSnagDate" v-model="editSnagDate"  @change="changeDate('from')" style="margin-left:0" id="editSnagDate" class="dateDisplayInput"  showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
@@ -373,7 +498,7 @@
 
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-3"><label for="editSnagTitle">Item *</label></div>
-             <div class="col-md-9"><InputText @input="editSnagTitleOK=true" id="editSnagTitle" v-model="editSnagTitle"  size="small"/>
+             <div class="col-md-9"><InputText @input="editSnagTitleOK=true" id="editSnagTitle" v-model="editSnagTitle"  />
              <InlineMessage v-if="!editSnagTitleOK">This field is required</InlineMessage></div>
            </div>
 
@@ -381,8 +506,8 @@
            <div class="row insertFormRow align-items-center   even">
              <div class="col-md-3"><label for="editSnagStatus">Status *</label></div>
              <div class="col-md-9">
-              <!--<InputText  @input="editSnagStatusOK=true" id="editSnagStatus" v-model="editSnagStatus"  size="small"/>-->
-              <Dropdown v-model="editSnagStatus" :options="allStatuses" filter optionLabel="name" :placeholder="editSnagStatus"></Dropdown>
+              <!--<InputText  @input="editSnagStatusOK=true" id="editSnagStatus" v-model="editSnagStatus" />-->
+              <Dropdown v-model="editSnagStatus" :options="allStatuses"  optionLabel="name" :placeholder="editSnagStatus"></Dropdown>
              <InlineMessage v-if="!editSnagStatusOK">This field is required</InlineMessage></div>
            </div>
 
@@ -390,7 +515,7 @@
  
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-3"><label for="username">Code *</label></div>
-             <div class="col-md-9"><InputText @input="editSnagCodeOK=true"  id="editSnagCode" v-model="editSnagCode" size="small" />
+             <div class="col-md-9"><InputText @input="editSnagCodeOK=true"  id="editSnagCode" v-model="editSnagCode"/>
              <InlineMessage v-if="!editSnagCodeOK">This field is required</InlineMessage></div>
            </div>
  
@@ -417,7 +542,7 @@
 
 
  <!-- dialog info --> 
- <Dialog v-model:visible="displayInfoDialog" modal  :style="{ width: '20rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
+ <Dialog v-model:visible="displayInfoDialog" modal  :style="{ width: '25rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
     <template #header=""> 
         <h4> {{ InfoModalHeader }}</h4>
     </template>
@@ -632,7 +757,7 @@ import TabPanel from 'primevue/tabpanel';
 import Dropdown from 'primevue/dropdown';
 import FileUpload from 'primevue/fileupload';
 //import Checkbox from 'primevue/checkbox';
-
+import Timeline from 'primevue/timeline';
 import axios from "axios";
 import $ from "jquery";
 
@@ -654,6 +779,7 @@ export default {
     TabView,
     TabPanel,
     InlineMessage,
+    Timeline,
     //InputNumber,
     Dropdown,
     FileUpload,
@@ -670,13 +796,86 @@ export default {
       snagsPage:1,       // default page to load
       pageSize:100,      // default page size
       totalRecords:0, // total records, get this from snags json
+   //   rowsPerPageOptions: [{"label":"25","value":"25"},{"label":"50","value":"50"},{"label":"100","value":"100"},{"label":"250","value":"250"},{"label":"500","value":"500"}],
+      rowsPerPageOptions:[25,50,100,250,500],
 
       searchQuery:'',
       captionFilter:'',
       codeFilter:'',
+      statusFilter:'',
+      worksPackageFilter:'',
 
       snagDetails:[],      // all snag details includin images
       snagDetailsData:[],  //only details, without images
+
+      
+      events:[
+              {
+                  "status": "created",
+                  "date": "2024-02-01",
+                  "createdBy": "Ryan Bradley",
+                  "icon":"pi pi-cog",
+                  "color":"blue",
+                  "notes":"",
+              },
+              {
+                  "status": "Uploaded image",
+                  "date": "2024-02-02",
+                  "createdBy": "Ryan Bradley",
+                  "icon":"pi pi-image",
+                  "color":"lightblue",
+                  "notes":"",
+              },
+              {
+                  "status": "Edited",
+                  "date": "2024-02-02",
+                  "createdBy": "Noel Mullen",
+                  "icon":"pi pi-pencil",
+                  "color":"lightblue",
+                  "notes":"Changed title",
+              },
+              {
+                  "status": "Accepted",
+                  "date": "2024-02-02",
+                  "createdBy": "Noel Mullen",
+                  "icon":"pi pi-check",
+                  "color":"green",
+                  "notes":"All looks ok"
+              },
+              {
+                  "status": "Closed",
+                  "date": "2024-02-02",
+                  "createdBy": "Noel Mullen",
+                  "icon":"pi pi-star",
+                  "color":"lightgreen",
+                  "notes":""
+                  
+              },
+              {
+                  "status": "Reopened",
+                  "date": "2024-02-02",
+                  "createdBy": "Ryan Bradley",
+                  "icon":"pi pi-refresh",
+                  "color":"blue",
+                  "notes":"It needs to be reopened"
+              },
+              {
+                  "status": "Accepted",
+                  "date": "2024-02-02",
+                  "createdBy": "Noel Mullen",
+                  "icon":"pi pi-check",
+                  "color":"green",
+                  "notes":"All looks ok"
+              },
+              {
+                  "status": "Closed",
+                  "date": "2024-02-02",
+                  "createdBy": "Evan Blake",
+                  "icon":"pi pi-star",
+                  "color":"lightgreen"
+              }
+          ],  
+
 
       howManyTrips:'',
       AllPageMarked:false,
@@ -696,7 +895,7 @@ export default {
       displayDeletePhotoConfirm:false,
       uploadFIlename:'',
       displayUploadModal:false,
-      allStatuses:[{"key":"Ready","name":"Ready"},{"key":"Completed","name":"Completed"}],
+      allStatuses:[],
       ClickedRowId:'',
       tableHeight:'calc( 100vh - 215px)',
       displayDeleteConfirm:false,
@@ -710,7 +909,7 @@ export default {
           loading2: true,
           filters1: null,
           visibleImagesModal:false,
-          tripImages: [],
+          snagImages: [],
           picturesTabShow:false,
           activeTab:0,
           SnagDate: '',
@@ -738,7 +937,7 @@ export default {
           newSnagFrom:'',
           newSnagTo:'',
           newSnagTitle:'',
-          newSnagCode:'0',
+          newSnagCode:'',
           newSnagStatus:'0',
           newSnagStatusCosts:'0',
           newSnagCompanyName:'',
@@ -776,9 +975,10 @@ export default {
                     editSnagInvoiced:'',
 
           panelClass:'closedPanel',
-          filters: {
+       /*   filters: {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-               'code':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'code': {value: null, matchMode: FilterMatchMode.EQUALS},
+              
                'caption':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
                'status':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
                'createdBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
@@ -788,9 +988,20 @@ export default {
                'assignedTo':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                
               
-            },
+            },*/
 
-      aSystemDoc: "",
+            filters: {
+               'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
+               'code': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'caption': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'status': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'createdBy': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'area': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'worksPackage': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'closedBy': {value: null, matchMode: FilterMatchMode.EQUALS},
+               'assignedTo': {value: null, matchMode: FilterMatchMode.EQUALS},
+            },
+            
     matchModes: [
         {label: 'Starts With', value: FilterMatchMode.STARTS_WITH},
         {label: 'Contains', value: FilterMatchMode.CONTAINS},
@@ -891,7 +1102,7 @@ export default {
     
       
       if(this.editSnagStatus.name){
-          this.editSnagStatus = this.editSnagStatus.name;
+          this.editSnagStatus = this.editSnagStatus.value;
       }
      
       if(this.editSnagStatus == ''){
@@ -910,7 +1121,7 @@ export default {
       }
 
     },
-    editSnagInDatabase(){
+    async editSnagInDatabase(){
      
          this.panelClass = 'closedPanel';   
          this.isLoading = true;  
@@ -930,8 +1141,8 @@ export default {
               "Content-Type": "application/json",
             }};
          
-
-           axios
+        try {
+          await axios
             .put(baseUrl + "/api/Snags/EditSnag",formData, config )
             .then(() => {
                                 
@@ -945,18 +1156,19 @@ export default {
                this.isLoading = false; 
            })
             
-             .catch(function (error) {
-              // handle error
-                           
-                console.table(error);
+                    
+            } catch (error) {
+
+           
                 this.editSnagDialog=false;
                 this.displayInfoDialog=true;
-                this.InfoModalHeader='Error!';
-                this.InfoModalMessage='An error occured while saving changes!';
+                this.InfoModalHeader='Error '+error.response.status;
+                this.InfoModalMessage=error.response.data.Message;
                 this.isLoading = false; 
-            
-              });
-          
+ 
+           }
+ 
+
           // after every request 
         //  // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
@@ -991,7 +1203,7 @@ export default {
         AllOk = false;
         this.newSnagStatusOK = false;
     }else{
-        this.newSnagStatus= this.newSnagStatus.name;
+        this.newSnagStatus= this.newSnagStatus.value;
         if(this.newSnagStatus == ''){
           this.newSnagStatusOK = false;
           AllOk = false;
@@ -1009,7 +1221,7 @@ export default {
         AllOk = false;
       }else{this.newSnagCommentsOK = true;}*/
 
-
+  
       if(AllOk == true){
           this.InsertSnagToDatabase();
       }
@@ -1029,13 +1241,14 @@ export default {
         const baseUrl = this._rootRestUrl;
               
        // let formData = JSON.stringify({sessionId:sessionId,tripsToInsert:[{key:'',from:this.newSnagFrom,to:this.newSnagTo,fixedCosts:this.newSnagCode,userEmail:'',date:SnagDate,cargoName:this.newSnagTitle,distance:this.newSnagStatus,distanceCosts:this.newSnagStatusCosts,companyName:this.newSnagCompanyName,comments:this.newSnagComments}] });
-        let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'SNAG',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
+        let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'Snag',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
 
         let config = {
             headers: {
               "Content-Type": "application/json",
         }};
-
+    
+       try{
           
       await   axios
             .post(baseUrl + "/api/Snags/InsertSnag",formData, config )
@@ -1050,22 +1263,24 @@ export default {
                this.isLoading = false; 
            })
             
-             .catch(function (error) {
-              // handle error
-                 
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
+            
+            } catch (error) {
+           
+              if(error.response.status == 401){
+                alert("Your session is expired! Please login");
+                localStorage.clear();
                  // document.location = '/';
               }
-
-                console.table(error);
                 this.newSnagDialog=false;
+                
                 this.displayInfoDialog=true;
-                this.InfoModalHeader='Error!';
-                this.InfoModalMessage='An error occured while saving snag!';
+                this.InfoModalHeader='Error '+error.response.status;
+                this.InfoModalMessage=error.response.data.Message;
                 this.isLoading = false; 
-            
-              });
+
+            }
+
+
 
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -1097,7 +1312,7 @@ export default {
 
     closeEditDialog(){
       this.editSnagDialog=false;
-      this.resetInputFields();
+      //this.resetInputFields();
     },
 
     resetInputFields(){
@@ -1106,9 +1321,9 @@ export default {
           this.newSnagFrom='';
           this.newSnagTo='';
           this.newSnagTitle='';
-          this.newSnagCode='0';
-          this.newSnagStatus='0';
-          this.newSnagStatusCosts='0';
+          this.newSnagCode='';
+          this.newSnagStatus='';
+          this.newSnagStatusCosts='';
           this.newSnagCompanyName='';
           this.newSnagComments='';
 
@@ -1185,7 +1400,7 @@ export default {
               "Content-Type": "application/json",
           }};
 
-          
+        try{  
           await  axios
             .post(baseUrl + "/api/v1/Trip/DeleteTripFile",formData, config )
             .then(() => {
@@ -1200,22 +1415,26 @@ export default {
                this.isLoading = false; 
            })
             
-             .catch(function (error) {
-              // handle error
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
-              }
-
-                console.table(error); // full error message inb console
-                this.displayDeleteConfirm = false;
-                this.displayDeletePhotoConfirm=true;
-                this.visibleImagesModal = false;
-                this.InfoModalHeader='Error!';
-                this.InfoModalMessage='An error occured while deleting photo!';
-                this.isLoading = false; 
             
-              });
+
+        } catch (error) {
+           
+           if(error.response.status == 401){
+             alert("Your session is expired! Please login");
+             localStorage.clear();
+              // document.location = '/';
+           }
+             this.displayDeletePhotoConfirm=false;
+             this.visibleImagesModal = false;
+
+             this.displayInfoDialog=true;
+             this.InfoModalHeader='Error '+error.response.status;
+             this.InfoModalMessage=error.response.data.Message;
+             this.isLoading = false; 
+
+         }
+
+
             
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -1238,7 +1457,7 @@ export default {
               "Content-Type": "application/json",
           }};
 
-          
+       try{   
         await   axios
             .post(baseUrl + "/api/v1/Trip/DeleteTrip",formData, config )
             .then(() => {
@@ -1252,21 +1471,25 @@ export default {
                this.isLoading = false; 
            })
             
-             .catch(function (error) {
 
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
-              }
-              // handle error
-                console.table(error); // full error message inb console
-                this.displayDeleteConfirm = false;
-                this.displayInfoDialog=true;
-                this.InfoModalHeader='Error!';
-                this.InfoModalMessage='An error occured while deleting trip!';
-                this.isLoading = false; 
-            
-              });
+       } catch (error) {
+           
+           if(error.response.status == 401){
+             alert("Your session is expired! Please login");
+             localStorage.clear();
+              // document.location = '/';
+           }
+             this.displayDeleteConfirm=false;
+         
+             
+             this.displayInfoDialog=true;
+             this.InfoModalHeader='Error '+error.response.status;
+             this.InfoModalMessage=error.response.data.Message;
+             this.isLoading = false; 
+
+         }
+
+
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
@@ -1294,7 +1517,8 @@ export default {
       this.getSnags();
       this.getCompanies();
     },
-    
+    onSwiper(){},
+   
           
     format_date_to_full(aDate,aTime){
    
@@ -1406,7 +1630,7 @@ export default {
       this.$emit('extend-session'); // extend time when session timeout popup will be shown
     },
 
-    async getSnags(){
+    async getSnags(all){
      
  //get selected dates
 
@@ -1454,25 +1678,49 @@ export default {
           */
           var addOnFilter = '';  
 
-            if(this.captionFilter != ''){
+            if(this.captionFilter != '' && this.captionFilter != null){
               addOnFilter += '&caption='+this.captionFilter;
             }
-            if(this.codeFilter != ''){
+            if(this.codeFilter != '' & this.codeFilter != null){
               addOnFilter += '&code='+this.codeFilter;
             }
+
+            if(this.statusFilter != '' & this.statusFilter != null){
+              addOnFilter += '&status='+this.statusFilter;
+            }
+
+            if(this.worksPackageFilter != '' & this.worksPackageFilter != null){
+              addOnFilter += '&worksPackage='+this.worksPackageFilter;
+            }
+
 
             if(this.searchQuery!=''){
               addOnFilter += '&searchQuery='+this.searchQuery;
             }
-          
+
+           
+            var pageA='';
+              if(all=='all'){
+                pageA=0;
+                this.pageSize=this.totalRecords
+                this.pageSize=100;
+              }else{
+                 pageA=+this.snagsPage;
+                 this.pageSize=100;
+              }
+         
+         try{
            await axios
-            .get(baseUrl + "/api/Snags/GetAllSnags/?pageNumber="+this.snagsPage + addOnFilter , formData, config)
+            .get(baseUrl + "/api/Snags/GetAllSnags/?pageSize="+this.pageSize+"&pageNumber="+pageA + addOnFilter , formData, config)
             .then((response) => {
               
                         
+         
               this.allSnags = response.data.snags;
               this.totalRecords = response.data.totalRecords;
-            
+           
+
+
               if(this.totalRecords == 0){
                 this.showTable = false;
               }else{
@@ -1482,20 +1730,29 @@ export default {
               this.isLoading = false;  
               this.reorganizePagination();
               
-              
+              // if we don't have loookups for statuses then get it :)
+              if(this.allStatuses.length==0){
+                this.getStatuses();
+              }
            })
-            
-             .catch(function (error) {
-              // handle error
            
 
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
-              }
-            
-              
-            });
+
+          } catch (error) {
+           
+           if(error.response.status == 401){
+             alert("Your session is expired! Please login");
+             localStorage.clear();
+              // document.location = '/';
+           }
+             
+             this.displayInfoDialog=true;
+             this.InfoModalHeader='Error '+error.response.status;
+             this.InfoModalMessage=error.response.data.Message;
+             this.isLoading = false; 
+
+         }
+
             
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -1503,6 +1760,65 @@ export default {
             // ---------------------
 
       },
+
+    async  getStatuses(){
+         const baseUrl = this._rootRestUrl;
+          
+          let formData = JSON.stringify({ category: 'SNSTAT' });
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+          try{
+           await axios
+            .get(baseUrl + "/api/LookUps/GetStatusLookUps?category="+'SNSTAT'  , formData, config)
+            .then((response) => {
+             
+              this.allStatuses = response.data;
+            
+
+                var jsonString = JSON.stringify(response.data)
+                jsonString = jsonString.replaceAll('"shortCode"', '"value"');
+                jsonString = jsonString.replaceAll('"description"', '"name"');
+
+                this.allStatuses =  $.parseJSON(jsonString)
+
+                   ;    
+           })
+            
+          } catch (error) {
+           
+           if(error.response.status == 401){
+             alert("Your session is expired! Please login");
+             localStorage.clear();
+              // document.location = '/';
+           }
+             
+             this.displayInfoDialog=true;
+             this.InfoModalHeader='Error '+error.response.status;
+             this.InfoModalMessage=error.response.data.Message;
+             this.isLoading = false; 
+
+         }
+
+            
+            // after every request 
+            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+          
+        
+      },
+
+
+      onRows(event){
+        alert(event)
+      },
+
       onRowClick(event) {
       
        
@@ -1526,7 +1842,7 @@ export default {
           
           $('.hiddenFields').each(function() {
            
-            if($(this).attr('data')==event.data.id){
+            if($(this).attr('data')==event.data.key){
               $(this).closest('tr').addClass('highlight');
              }
           
@@ -1548,7 +1864,7 @@ export default {
           
           $('.hiddenFields').each(function() {
            
-            if($(this).attr('data')==event.data.id){
+            if($(this).attr('data')==event.data.key){
               $(this).closest('tr').addClass('highlight');
              }
           
@@ -1561,7 +1877,7 @@ export default {
         this.getDocumentDetails();
 
                
-        if(this.tripImages==''){
+        if(this.snagImages.length > 0){
             this.picturesTabShow= false;  
             this.activeTab=0;  
          } else{
@@ -1722,7 +2038,7 @@ export default {
               "Content-Type": "application/json",
             }};
          
-
+        try{
          await  axios
             .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
             .then(() => {
@@ -1739,23 +2055,25 @@ export default {
                this.AllPageMarked = false;
            })
             
-             .catch(function (error) {
-              // handle error
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
+             
+          } catch (error) {
+          
+              if(error.response.status == 401){
+                alert("Your session is expired! Please login");
+                localStorage.clear();
+                  // document.location = '/';
               }
+                this.sendInvoiceDialog=false;  
 
-                console.table(error);
-
-                this.sendInvoiceDialog=false;
-                   this.InfoModalHeader='Error!';
-                   this.InfoModalMessage=error.response.data;
-                   this.infoDialogStyle=[{ width: '40rem' }];
-                   this.displayInfoDialog= true;
+                this.displayInfoDialog=true;
+                this.InfoModalHeader='Error '+error.response.status;
+                this.InfoModalMessage=error.response.data.Message;
                 this.isLoading = false; 
-              });
-            
+
+          }
+
+
+
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
@@ -1810,50 +2128,53 @@ export default {
              "Content-Type": "application/json",
            }};
         
-
-      await  axios
+      try{
+          await  axios
            .post(baseUrl + "/api/v1/Trip/MarkInvoicesAsSent",formData, config )
            .then(() => {
                                
-              this.getSnags();
-              this.getCompanies();
-              this.displayInfoDialog= true;
-              this.sendMultipleInvoiceDialog=false;
-              this.showInvoiceSelectedButton=false;
-              this.InfoModalHeader='Info';
-              this.InfoModalMessage='Trips are marked as invoiced';
-              this.isLoading = false; 
+                this.getSnags();
+                this.getCompanies();
+                this.displayInfoDialog= true;
+                this.sendMultipleInvoiceDialog=false;
+                this.showInvoiceSelectedButton=false;
+                this.InfoModalHeader='Info';
+                this.InfoModalMessage='Trips are marked as invoiced';
+                this.isLoading = false; 
 
-              //remove checkbox
-              collectIDsToRemoveChecked.forEach((aID) => { 
-               this.checkedIDs[aID]=false;
-           
-              //remove ID from array
-              const index = this.selectedIDsForInvoicing.indexOf(aID);
-              this.selectedIDsForInvoicing.splice(index, 1);     
-               
-              });
-
-             
-
+                //remove checkbox
+                collectIDsToRemoveChecked.forEach((aID) => { 
+                this.checkedIDs[aID]=false;
             
+                //remove ID from array
+                const index = this.selectedIDsForInvoicing.indexOf(aID);
+                this.selectedIDsForInvoicing.splice(index, 1);     
+                
+                });
 
 
-          })
+            })
            
-            .catch(function (error) {
-             // handle error
-                          
-               console.table(error);
-
-               this.sendInvoiceDialog=false;
-                  this.InfoModalHeader='Error!';
-                  this.InfoModalMessage=error.response.data;
-                  this.infoDialogStyle=[{ width: '40rem' }];
-                  this.displayInfoDialog= true;
-                  this.isLoading = false; 
-             });
+        
+             
+            } catch (error) {
           
+          if(error.response.status == 401){
+            alert("Your session is expired! Please login");
+            localStorage.clear();
+              // document.location = '/';
+          }
+             this.sendInvoiceDialog=false;
+
+            this.displayInfoDialog=true;
+            this.InfoModalHeader='Error '+error.response.status;
+            this.InfoModalMessage=error.response.data.Message;
+            this.isLoading = false; 
+
+      }
+
+
+
             this.AllPageMarked=false;
             this.AllMarked=false;
 
@@ -1880,7 +2201,7 @@ export default {
               "Content-Type": "application/json",
             }};
          
-
+      try{
           await axios
             .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
             .then(() => {
@@ -1895,23 +2216,23 @@ export default {
                this.isLoading = false; 
            })
             
-             .catch(function (error) {
-              // handle error
-                 
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
+            
+            } catch (error) {
+          
+              if(error.response.status == 401){
+                alert("Your session is expired! Please login");
+                localStorage.clear();
+                  // document.location = '/';
               }
+             this.displayUnInvoiceConfirm=false;
 
-                console.table(error);
+            this.displayInfoDialog=true;
+            this.InfoModalHeader='Error '+error.response.status;
+            this.InfoModalMessage=error.response.data.Message;
+            this.isLoading = false; 
 
-                this.displayUnInvoiceConfirm=false;
-                   this.InfoModalHeader='Error!';
-                   this.InfoModalMessage=error.response.data;
-                   this.infoDialogStyle=[{ width: '40rem' }];
-                   this.displayInfoDialog= true;
-                this.isLoading = false; 
-              });
+           }
+
 
            // after every request 
            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -1937,6 +2258,7 @@ export default {
 
             this.isLoading = true;
 
+         try{   
            await axios
             .get(baseUrl + "/api/Snags/GetSnagDetails/?snagKey="+this.ClickedRowId , formData, config)
             .then((response) => {
@@ -1947,24 +2269,22 @@ export default {
              
            })
             
-             .catch(function (error) {
-              // handle error
-           
-
-              if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
+          } catch (error) {
+                
+              if(error.response.status == 401){
+                alert("Your session is expired! Please login");
+                localStorage.clear();
+                  // document.location = '/';
               }
-
-              console.table(error);
              
-                this.displayInfoDialog=true;
-                this.InfoModalHeader='Error!';
-                this.InfoModalMessage='An error occured while getting snag details!';
-                this.isLoading = false; 
-            
-              
-            });
+
+              this.displayInfoDialog=true;
+              this.InfoModalHeader='Error '+error.response.status;
+              this.InfoModalMessage=error.response.data.Message;
+              this.isLoading = false; 
+
+            }  
+
             
             // after every request 
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -1987,17 +2307,15 @@ export default {
        
         var snagPictures = this.snagDetails['snagAttachments'];
 
-       
+   
         if (snagPictures.length >0){
           
-         this.tripImages = snagPictures;
-                    
-          
+         this.snagImages = snagPictures;
           
           this.picturesTabShow = true;
         }else{
           this.picturesTabShow = false;
-          this.tripImages = [];
+          this.snagImages = [];
         }
 
          
@@ -2093,6 +2411,7 @@ export default {
 
           };
 
+        try{  
          await  axios
             .get(baseUrl + "/api/v1/Trip/CSV/Trips/?sessionId="+sessionId+"&DateFrom="+DateFrom+"&DateTo="+DateTo+"&locale="+locale, formData, config)
             .then((response) => {
@@ -2103,17 +2422,23 @@ export default {
                this.downloadCSV(this.downloadedReport, fileName);
               
             })           
-             .catch(function (error) {
-                // handle error
-                this.isLoading = false; 
-                
-                if(error.response.status=='401') { //not authorized, token expires
-                 localStorage.clear();
-                 // document.location = '/';
-              }
+           
 
+          } catch (error) {
+          
+                if(error.response.status == 401){
+                  alert("Your session is expired! Please login");
+                  localStorage.clear();
+                    // document.location = '/';
+                }
+              this.displayUnInvoiceConfirm=false;
 
-             });
+              this.displayInfoDialog=true;
+              this.InfoModalHeader='Error '+error.response.status;
+              this.InfoModalMessage=error.response.data.Message;
+              this.isLoading = false; 
+
+       }   
 
           // after every request 
           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
@@ -2236,28 +2561,40 @@ export default {
         },
 
         onFilter(event){
+         // console.table(event.filters.caption.value)
           
-         
-          this.captionFilter = '';
-          this.codeFilter = '';
+          this.captionFilter = event.filters.caption.value;
+          this.codeFilter = event.filters.code.value;
+          this.statusFilter = event.filters.status.value;
+          this.worksPackageFilter = event.filters.worksPackage.value;
 
-          var captionFilterJson =  event.filters.caption.constraints;
+
+
+
+       //   var captionFilterJson =  event.filters.caption;
          
-            captionFilterJson.forEach((value) => {
+         /*  captionFilterJson.forEach((value) => {
+            alert(value)
                 if(value['value']!=''  && value['value']!=null){
                     this.captionFilter = value['value'];
+                   
                 }
-            });
+            });*/
 
-          var codeFilterJson =  event.filters.code.constraints;
+         // alert(event.filters.caption.matchMode.value)
+
+       //     this.captionFilter = event.filters.caption.matchMode.value;
+
+         /* var codeFilterJson =  event.filters.code.matchMode;
           
             codeFilterJson.forEach((value) => {
                 if(value['value']!='' && value['value']!=null){
                     this.codeFilter = value['value'];
                 }
-            });
+            });*/
 
-        this.getSnags();
+    
+      this.getSnags();
 
         },
 
@@ -2534,7 +2871,7 @@ export default {
             text-transform: uppercase;
         }
 
-        .p-button{background:#138BA7 !important;border-color: #138BA7 !important;}
+        .p-button{background:rgb(142, 53, 46)  !important;border-color: rgb(142, 53, 46)  !important;}
         .p-button:hover{background:#263a4f !important;border-color: #263a4f !important;}
         .p-button.p-button-outlined{color:white;}
         .p-button.p-button-outlined:enabled:hover{color:white;background:#263a4f !important;border-color: #263a4f !important;}        
@@ -2572,8 +2909,8 @@ th.actionsColumns{display:flex !important}
 /*.p-column-header-content{display:block}*/
 
 .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
-  background: #138BA7;
-  border-color: #138BA7;
+  background: rgb(142, 53, 46) ;
+  border-color: rgb(142, 53, 46) ;
   color: #ffffff;
 }
 
@@ -2636,7 +2973,9 @@ text-decoration:none;
   border-top:none !important;
 }
 
-.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {border:1px solid #ccc}
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {border:1px solid #ccc;}
+
+.p-tabview .p-tabview-nav li{margin-right:3px}
 
 .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
   border: 1px solid #ccc;
@@ -2672,8 +3011,8 @@ text-decoration:none;
 .insertFormRow.even {background:#f3f3f3}
 
 .p-dialog-content{height:unset;overflow-y: auto;}
-.redButton{background-color:darkred !important}
-.redButton:hover{background-color:rgb(82, 15, 15) !important}
+.redButton{background-color:red !important; border:red !important}
+.redButton:hover{background-color:darkred !important}
 #formContainer{font-size:0.9rem !important;}
 
 .p-inline-message.p-inline-message-error {padding:4px;margin-left:4px;}
@@ -2765,7 +3104,7 @@ text-decoration:none;
         .cls-context-menu li a {padding:5px 12px;display:block;}
 
         .cls-context-menu li:hover{
-            background: #138BA7 !important;
+            background: rgb(142, 53, 46)  !important;
             color: #FFF;
         }
         .cls-context-menu li:last-child { border:none; }
@@ -2799,6 +3138,66 @@ text-decoration:none;
         }
       
     /*    .p-datatable thead tr th.p-filter-column{background:#FFF !important}*/
+
+
+    .closedByName, .closedByDate{display:block;width:100%}
+    .closedByDate{font-size:80%;color:#999}
+
+
+    .historyStatus{font-size:90%;color:#000;font-weight:bold}
+    .historyDate{font-size:80%;color:#999}
+    .historyName{font-size:80%;color:#000;}
+    .border-circle {
+  border-radius: 50% !important;
+}
+
+.shadow-1 {
+  box-shadow: 0 3px 5px #00000005,0 0 2px #0000000d,0 1px 4px #00000014 !important;
+}
+.h-2rem {
+  height: 2rem !important;
+}
+.w-2rem {
+  width: 2rem !important;
+}
+.flex {
+  display: flex !important;
+}
+
+.statusOpen{background:lightblue}
+.statusClosed{background:green;}
+.statusActioned{background:blue}
+.statusReturned{background:orange}
+
+.statusBlock{
+  display:block;
+  width:100%;
+  padding:5px;
+  color:white;
+  border-radius:5px;
+}
+
+.detailsHeadlineCode{color:#777 !important;font-size:90%;display:block}
+.detailsHeadline{color:#000;font-size:120%;display:block}
+
+.textAreaComments{width:250px;font-size:75%;border: 1px solid #DDD; background: #fafafa;}
+
+
+/*<ul id="pv_id_25_list" class="p-dropdown-items" role="listbox">
+  <li id="pv_id_25_0" class="p-dropdown-item" role="option" aria-label="Starts with" aria-selected="false" aria-disabled="false" aria-setsize="6" aria-posinset="1">Starts with</li>
+  <li id="pv_id_25_1" class="p-dropdown-item p-highlight" role="option" aria-label="Contains" aria-selected="true" aria-disabled="false" aria-setsize="6" aria-posinset="2">Contains</li>
+  <li id="pv_id_25_2" class="p-dropdown-item" role="option" aria-label="Not contains" aria-selected="false" aria-disabled="false" aria-setsize="6" aria-posinset="3">Not contains</li>
+  <li id="pv_id_25_3" class="p-dropdown-item" role="option" aria-label="Ends with" aria-selected="false" aria-disabled="false" aria-setsize="6" aria-posinset="4">Ends with</li>
+  <li id="pv_id_25_4" class="p-dropdown-item" role="option" aria-label="Equals" aria-selected="false" aria-disabled="false" aria-setsize="6" aria-posinset="5">Equals</li>
+  <li id="pv_id_25_5" class="p-dropdown-item" role="option" aria-label="Not equals" aria-selected="false" aria-disabled="false" aria-setsize="6" aria-posinset="6">Not equals</li>
+  <!---->
+</ul>*/
+
+.p-dropdown-item[aria-label="Starts with"]{display:none}
+.p-dropdown-item[aria-label="Contains"]{display:none}
+.p-dropdown-item[aria-label="Not contains"]{display:none}
+.p-dropdown-item[aria-label="Ends with"]{display:none}
+.p-dropdown-item[aria-label="Not equals"]{display:none}
 
 </style>
 

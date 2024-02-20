@@ -58,7 +58,7 @@
         <!-- if user not logged in -->
         <div
           class="col-3 col-md-4 text-end"
-          v-if="!this.$store.getters.isAuthenticated"
+          v-if="this.$store.getters.isAuthenticated"
         >
           <a
             href="javascript:;"
@@ -79,7 +79,7 @@
         <!-- if user  logged in -->
         <div
           class="col-md-4 text-end"
-          v-if="this.$store.getters.isAuthenticated"
+          v-if="!this.$store.getters.isAuthenticated"
         >
           <div style="">
             <div class="text-in-circle-icon">
@@ -120,7 +120,7 @@
                     <div class="col-10">
                       <div class="row">
                         <div class="col-12">
-                          <strong>{{ this.$store.getters.getUserFullName }}</strong>
+                          <strong>Firstname Lastname</strong>
                         </div>
                         <div class="col-12">
                          
@@ -223,7 +223,8 @@ export default {
   mounted() {},
   methods: {
     userInitials() {
-      const fullName = this.$store.getters.getUserFullName;
+      //const fullName = this.$store.getters.getUserFullName;
+      const fullName ="Firstname Lastname";
       return fullName
         .match(/(\b\S)?/g)
         .join("")
@@ -251,7 +252,7 @@ export default {
 .text-in-circle {
   position: relative;
   display: inline-block;
-  background: #138BA7;
+  background: rgb(142, 53, 46);
   border-radius: 50%;
   width: 29px;
   height: 29px;
@@ -333,6 +334,6 @@ export default {
 
 a:link {color:black !important}
 a.signInHref{color:white !important}
-.blueIcons {color:#138BA7 }
+.blueIcons {color:rgb(142, 53, 46) }
 
 </style>
