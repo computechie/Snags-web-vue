@@ -1659,7 +1659,9 @@ export default {
     } ,
 
      refreshData(){
-      
+   
+      if(this.fromDate == null){this.fromDate=''}
+      if(this.toDate == null){this.toDate=''}
         //get selected dates
       if(this.fromDate.length>0){  
         if (this.fromDate.length!=10){
