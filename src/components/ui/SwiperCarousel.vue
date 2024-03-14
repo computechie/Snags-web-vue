@@ -66,7 +66,18 @@
             ref="swiperTop"
           >
             <swiper-slide  class="swiperSlideHolder" v-for="(tripImage,index) in tripImages" v-bind:key="tripImage.key">
+             
               <img  :src="baseUrl+methodName+parameter+tripImage.key+'&t='+timestamp" :id="tripImage.key" :index="index">
+           
+              
+             <div class="row justify-content-center">
+              <div class="col-md-6 text-center">
+                <div class="snagNotes">{{ notes }}</div>
+                
+              </div>
+             </div>
+            
+
              </swiper-slide>
              
            
@@ -147,7 +158,7 @@
 
    // Import Swiper styles
   export default {
-    props:['tripImages','openedcargoname','userType'],
+    props:['notes','tripImages','openedcargoname','userType'],
     components: {
       Swiper,
       SwiperSlide,
@@ -173,6 +184,7 @@
 
     data() {
       return {
+        SnagNotes:this.notes,
         thumbsSwiper:'',
         timestamp : Date.now(),
         swiper:'',
@@ -327,7 +339,7 @@
     },
   mounted(){
    // alert(this.tripImages)
-  
+    
   },
  
   };
@@ -373,7 +385,7 @@
 .zoomedImageHolder img {
   display: block;
   max-width:100%;
-  max-height:calc(100% - 0px);
+  max-height:calc(100% - 50px);
   width: auto;
   height: auto;
   margin:auto;
@@ -430,4 +442,11 @@ h5 {display:inline-block}
 
 .p-dialog{max-height: 90% !important}
 
+.snagNotes{background: #fff;
+  border: 1px solid #bbb;
+  margin: 4px;
+  min-height: 50px;
+  max-height: 50px;
+  overflow-y: auto;
+  font-size: 85%;}
 </style>

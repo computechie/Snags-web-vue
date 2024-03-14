@@ -36,7 +36,7 @@
         minWidth: `${dividerPosition}px`,
       }"
     >
-      <div class="sidebarTopMenu" v-bind:class="{ textcenter: isCentered }">
+      <div class="sidebarTopMenu" v-if="showLeftMenu" v-bind:class="{ textcenter: isCentered }">
         <menu-link
           atitle="Snags"
           link="/pages/snags"
@@ -44,6 +44,7 @@
           iconsize="21"
           :isActive="isActive"
         ></menu-link>
+       
        
         <menu-link
           v-if="userType=='ADMIN'"
@@ -53,9 +54,13 @@
           iconsize="17"
           :isActive="isActive"
         ></menu-link>
+        
 
         <sidebar-cde :isActive="isActive" v-if="isCDE" ></sidebar-cde>
         
+  -    <img :src="_rootLoginLogo" class="sideBarAppLogo"     />
+
+
       </div>
 
      <!--<div class="sidebarBottomMenu" v-bind:class="{ textcenter: isCentered }">
@@ -82,12 +87,13 @@
       id="content"
       class="content"
       :style="{
+       
         paddingLeft: `${dividerPosition}px`,
         width: `${contentWidth}px`,
       }"
     >
       <section>
-        <div class="container-fluid" :style="{ padding: `${this.padding0}` }">
+        <div class="container-fluid allContent"  :style="{ padding: `${this.padding0}` }">
           
           
           <router-view  @extend-session="showExtendPopupDialog()" ></router-view>
@@ -132,6 +138,7 @@ export default {
   },
   data() {
     return {
+      showLeftMenu:true,
       countdownSize:'width:20rem',
       deadline:'2023-12-25 00:00:00',
       timerExtend:'',
@@ -151,8 +158,8 @@ export default {
 
       // for visual settings:
       padding0: "12px",
-      menuMinSize: 50,
-      breakPointHideSidebarDescriptions: 198, // when to hide menu description and show only icon
+      menuMinSize: 0,
+      breakPointHideSidebarDescriptions: 120, // when to hide menu description and show only icon
       dividerPosition: 210, //px default width of the left sidebar!
       contentWidth: window.innerWidth, //px width of the main content
       isActive: true, //in start visible sidebar icon descriptions
@@ -192,6 +199,13 @@ export default {
       this.emitter.emit("newDimensions", this.dividerPosition);
 
       localStorage.setItem("dividerPosition", this.dividerPosition);
+
+        if( this.dividerPosition < 50){
+          this.showLeftMenu=false;
+        }else{
+          this.showLeftMenu=true;
+        }
+
 
       // -------------------
     },
@@ -238,6 +252,14 @@ export default {
           this.sidebarColapseOnLoad();
         }
       }
+
+      if( this.dividerPosition < 50){
+          this.showLeftMenu=false;
+        }else{
+          this.showLeftMenu=true;
+        }
+
+       // alert(this.dividerPosition)
     },
 
     getDimensions() {
@@ -286,6 +308,9 @@ export default {
         this.isCentered = false;
         this.iconCloseOpen = "&times;";
         localStorage.setItem("isSideBarOpen", true);
+        
+          this.showLeftMenu=true;
+       
       } else {
         //we wnat to close it
         this.dividerPosition = this.menuMinSize;
@@ -294,6 +319,8 @@ export default {
         //     this.isCentered = true;
         this.iconCloseOpen = "&#9776;";
         localStorage.setItem("isSideBarOpen", false);
+
+         this.showLeftMenu=false;
       }
        
        
@@ -542,6 +569,7 @@ a.router-link-active:hover {
   position: absolute;
   left: 3px;
   width: calc(100% - 6px);
+  height:calc(100vh - 120px)
 }
 a.router-link-active,
 a.router-link-active:hover {
@@ -575,7 +603,7 @@ a.router-link-active:hover {
   font-size: 1rem;
 }
 .sidebarTopMenu {
-  top: 60px;
+  top: 69px;
 }
 .sidebarBottomMenu,
 .sidebarTopMenu {
@@ -591,10 +619,12 @@ a.router-link-active:hover {
   margin-left: 1px;
 }
 .sidebarMenuRow {
-  padding: 3px;
+  padding: 0px;
   width: 100%;
   padding-left: 6px;
   padding-right: 6px;
+  height:44px;
+  width: calc(100% - 8px)
 }
 .sidebarMenuRow:hover {
   background-color: #c2c2c2;
@@ -628,6 +658,10 @@ a.router-link-active:hover {
 }
 .backdrop{backdrop-filter: blur(2px);background-color:rgba(255, 255, 255, 0.0) !important}
 
+.sideBarAppLogo{margin-bottom:8px;margin-left: 13px; max-width: calc(100% - 70px);min-width:150px;position:absolute;bottom:25px}
+
+.allContent{background:white;z-index:99;position:relative;overflow: hidden; }
+.topLoginBar{z-index:100;position:absolute;top:0px}
 </style>
 
 

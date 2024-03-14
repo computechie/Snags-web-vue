@@ -23,10 +23,15 @@
             v-on:click="openCloseMenu()"
             v-html="menuIcon"
           ></button>
-          <img
+         <!-- <img
             :src="_rootLoginLogo"
             style="margin-bottom:8px;margin-left: 13px; max-width: calc(100% - 70px)"
-          />
+          />-->
+
+              <div class="projectTitle">     
+                   <div class="projectNameHeadline">DORMITORY DEMO PROJECT</div>
+                    <div class="documentTypeHeadline">Snags</div>
+              </div>
         </div>
 
         <div
@@ -336,4 +341,7 @@ a:link {color:black !important}
 a.signInHref{color:white !important}
 .blueIcons {color:rgb(142, 53, 46) }
 
+
+.projectTitle{display:inline-block}
+.sidebarCollapseBtn{display:inline-block;position: relative;top:-5px}
 </style>

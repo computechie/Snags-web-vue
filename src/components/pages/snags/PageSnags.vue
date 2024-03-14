@@ -11,7 +11,7 @@
     </span>
   <!-- -------------------  end    of search box      -->
   
-<div  style="width:100%;" @contextmenu = "showContextMenu($event)">
+<div class="dataTableHolder"  style="width:100%;" @contextmenu = "showContextMenu($event)">
   <DataTable  
             :totalRecords="totalRecords" 
             :id="dataTable" 
@@ -24,7 +24,7 @@
             @page="onPage($event)"
             @sort="onSort($event)"
             @filter="onFilter($event)"
-            
+                       
             @rowSelect="onRowSelect"
             @rowClick="onRowClick"
             @rowsChange="onRows($event)"
@@ -60,7 +60,7 @@
 
 
                     <div class="row">
-                      <div class="col-md-4">
+                      <div class="d-none d-xl-block col-md-4">
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'New Snag', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="newSnag" label="New snag"/>
                         &nbsp;
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label="Download Report"/>
@@ -69,10 +69,28 @@
                        
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Load all snags', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="getSnags('all')" label="Load all snags"/>
                         &nbsp;
-                    
-                      </div>
-                        
-                      <div class="col-md-8 text-end">
+                     </div>
+
+                     <div class="d-block d-xl-none  d-col-md-4">
+                        <Button v-tooltip.bottom="{ value: 'New Snag', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="newSnag" label=""/>
+                        &nbsp;
+                        <Button v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label=""/>
+                        &nbsp;
+                        <Button v-if="showInvoiceSelectedButton && userType=='ADMIN'" style="min-width:120px" v-tooltip.bottom="{ value: 'Invoice selected', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-check-circle" class="p-button-text" id="invoiceSelected" @click="invoiceSelected" label="Invoice selected"/>
+                       
+                        <Button  v-tooltip.bottom="{ value: 'Load all snags', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="getSnags('all')" label=""/>
+                        &nbsp;
+                     </div>
+
+                     <div class="col-md-4 text-center">
+                       <!--
+                        <div class="projectNameHeadline">DORMITORY DEMO PROJECT</div>
+                        <div class="documentTypeHeadline">Snags</div>
+                       -->
+                     </div>
+
+
+                      <div class="col-md-4 text-end">
                           <Calendar style="width:160px" v-tooltip.bottom="{ value: 'Date from', showDelay: 1000, hideDelay: 300 }" id="fromDateBox" class="dateDisplayInput" v-model="fromDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999" @change="changeDate('from')"/>
                           <Calendar style="width:160px" v-tooltip.bottom="{ value: 'Date to', showDelay: 1000, hideDelay: 300 }" id="toDateBox" class="dateDisplayInput" v-model="toDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999" @change="changeDate('to')"/>
                           <Button type="button" icon="pi pi-refresh" class="p-button-text" id="refreshButton" @click="refreshData" />
@@ -91,24 +109,30 @@
 
          
 
-    <Column field="date" header="Date Opened" style="min-width: 10rem;min-height:43px;">
+    <Column class="openedColumn"  field="date" filterField="createdBy" header="Opened" style="display:grid; min-width: 10rem;min-height:43px;">
     
       <template #body="{ data }">
-          {{format_date(data.date   ,'DD/MM/YYYY') }}         
-          <span style="display: none;" class="hiddenFields" :data=data.key></span>    
-          
-        </template>
+          <span class="closedByName">{{data.createdBy}}</span>
+          <span class="closedByDate"> {{format_date(data.created   ,'DD/MM/YYYY') }}  </span>   
+        
+      </template>
+       <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback();" label="Clear"/>     
 
+       </template> 
+    
     </Column>
 
 
 
-    <Column field="code" header="Code"  bodyStyle="text-align: left"  style=";min-height:43px;">
+    <Column class="codeColumn" field="code" header="Code"  bodyStyle="text-align: left"  style="min-height:43px;">
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
         </template>
     </Column>
-    <Column field="caption" header="Item"  bodyStyle="text-align: left"  style="text-align: left;min-height:43px;min-width:320px">
+    <Column class="captionColumn" field="caption" header="Item"  bodyStyle="text-align: left"  style="text-align: left;min-height:43px;min-width:320px">
        
       <template #body="{ data }">
           <div style="display:inline-block;width:85%;padding-right:50px">{{data.caption}}
@@ -116,24 +140,25 @@
           </div>
           <div  style="display:inline-block;display:block;width:15%" v-if="data.hasPhoto != ''">
             
-            <img v-if="data.caption=='Kitchen Units'" src="/images/pin.png" style="height:18px"> 
-            <img v-if="data.caption!='Kitchen Units'" src="/images/pin.png" style="height:18px;visibility:hidden"> 
+            <img v-if="data.caption=='Architrave'" src="/images/pin.png" style="height:18px"> 
+            <img v-if="data.caption!='Architrave'" src="/images/pin.png" style="height:18px;visibility:hidden"> 
             <i class="fa fa-camera"></i></div>
 
         </template>
       
       
       
-      <template #filter="{filterModel,filterCallback}">
+        <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
         </template>
     
     </Column>
-    <Column field="status" header="Status" bodyStyle="text-align: left"  style=";min-height:43px;">
+    <Column class="statusColumn" field="status" header="Status" bodyStyle="text-align: left"  style=";min-height:43px;max-width:100px !important">
       
       <template #body="{ data }">
           <div v-if="data.status=='Open'" class="statusOpen statusBlock">{{ data.status }}</div>
-          <div v-if="data.status=='Closed'" class="statusClosed statusBlock"  >{{ data.status }}</div>
+          <div v-if="data.status=='Closed'" class="statusClosed statusBlock">{{ data.status }}</div>
           <div v-if="data.status=='Actioned'" class="statusActioned statusBlock">{{ data.status }}</div>
           <div v-if="data.status=='Returned'" class="statusReturned statusBlock">{{ data.status }}</div>
 
@@ -144,36 +169,60 @@
       <template #filter="{filterModel}">
           <!--<InputText v-model="filterModel.value" :options="allCompanies" filter optionLabel="name" placeholder="Select Company"></InputText>-->
           <Dropdown v-model="filterModel.value" :options="allStatuses" filter optionLabel="name" optionValue="value" placeholder="Select Status"></Dropdown>
+          <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
         </template>
 
         
     </Column>
 
-    <Column field="assignedTo" header="Action By"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+    <Column class="assignedToColumn" field="assignedTo" filterField="assignedTo" header="Action By"  bodyStyle="text-align: left"  style="display:grid;;min-height:43px;">
+    
+      <template #body="{ data }" >
+          <span class="closedByName">{{data.assignedTo}}</span>
+          <span class="closedByDate"> {{format_date(data.date   ,'DD/MM/YYYY') }}  </span>   
+        
+      </template>
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+        </template> 
+    
+    </Column>
 
     
-    <Column field="area" header="Location"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
-    <Column field="worksPackage" header="Works Package"  bodyStyle="text-align: left"  style=";min-height:43px;">
+    <Column class="areaColumn" field="area" header="Location"  bodyStyle="text-align: left"  style=";min-height:43px;">
+        <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+        </template> 
+    </Column>
+    
+    
+    <Column class="workspackageColumn" field="worksPackage" header="Works Package"  bodyStyle="text-align: left"  style="min-height:43px;">
       
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
         </template> 
       </Column>
     
-    <Column field="createdBy" header="Owner"  bodyStyle="text-align: left"  style=";min-height:43px;"></Column>
+ 
 
     
-    <Column field="closedBy" header="Closed By"  bodyStyle="text-align: left"  style="display: grid;min-height:43px;">
+    <Column class="closedByColumn" field="closedBy"  filterField="closedBy"  header="Closed By"  bodyStyle="text-align: left"  style="display: grid;min-height:43px;">
       <template #body="{ data }">
           <span class="closedByName">{{data.closedBy}}</span>
           <span class="closedByDate"> {{format_date(data.signOffDate   ,'DD/MM/YYYY') }}  </span>   
         
       </template>
-    
+      <template #filter="{filterModel,filterCallback}">
+            <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+        </template> 
     </Column>
 
    
-    <Column field="" header="" bodyStyle="text-align: left"  style=";min-height:43px;">
+    <Column field="" header="" bodyStyle="text-align: left"  style="min-height:43px;">
       <template #header >
           <div style="right: 20px;  position: absolute;">
             <div style="float:right">Actions</div>
@@ -287,7 +336,17 @@
             <TabView v-model:activeIndex="activeTab">    
               
               <TabPanel header="Details">
+<div class="row" style="margin-bottom:10px">
+  <div class="col text-start" style="padding:0">
+      
+      <Button v-tooltip.bottom="{ value: 'Download PDF', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-file-pdf" class="p-button-text donwloadPDFbutton" @click="downloadSnagPDF" label="Download PDF"/>
+                     
 
+  </div>
+</div>
+          
+                
+            
             <table class="table table-striped table-sm" id="detailsTable">
              
              <tbody>
@@ -349,7 +408,7 @@
          
           
           <TabPanel :header="'Pictures (' +snagImages.length+')'"  v-if="picturesTabShow">
-              <SwiperCarousel :tripImages="snagImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
+              <SwiperCarousel :notes="snagNotes" :tripImages="snagImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
              
              <div class="row" style="margin-top:12px">
                 <div class="col text-end" style="padding:0">
@@ -804,6 +863,20 @@ export default {
       codeFilter:'',
       statusFilter:'',
       worksPackageFilter:'',
+      areaFilter:'',
+      createdByFilter:'',
+      actionByFilter:'',
+      closedByFilter:'',
+
+      captionFilterMode:'',
+      codeFilterMode:'',
+      statusFilterMode:'',
+      worksPackageFilterMode:'',
+      areaFilterMode:'',
+      createdByFilterMode:'',
+      actionByFilterMode:'',
+      closedByFilterMode:'',
+
 
       snagDetails:[],      // all snag details includin images
       snagDetailsData:[],  //only details, without images
@@ -900,6 +973,7 @@ export default {
       tableHeight:'calc( 100vh - 215px)',
       displayDeleteConfirm:false,
       deletingTripName:'',
+      snagNotes:'',
          newSnagDialog:false,
          editSnagDialog:false,
           isLoading: true,
@@ -979,27 +1053,30 @@ export default {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
                'code': {value: null, matchMode: FilterMatchMode.EQUALS},
               
-               'caption':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'status':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'createdBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+              //if multiple filters is posible
+               'code':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'caption': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'status':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'createdBy': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'area':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
-               'worksPackage':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'worksPackage': {{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'closedBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
-               'assignedTo':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'assignedTo': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                
               
             },*/
 
             filters: {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-               'code': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'caption': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'status': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'createdBy': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'area': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'worksPackage': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'closedBy': {value: null, matchMode: FilterMatchMode.EQUALS},
-               'assignedTo': {value: null, matchMode: FilterMatchMode.EQUALS},
+
+               'code':{ constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'caption': {constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'status':{ constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'createdBy': { constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'area':{constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'worksPackage': {constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'closedBy':{constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'assignedTo': {constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
             },
             
     matchModes: [
@@ -1013,6 +1090,86 @@ export default {
     };
   },
   methods: {
+
+   async downloadSnagPDF(){
+      const snagKey = this.snagDetails['snag']['key'];
+      const snagCode = this.snagDetails['snag']['code'];
+      const snagTitle = this.snagDetails['snag']['caption'];
+      const aFileName = snagCode + " - " + snagTitle +".pdf";
+
+      //const sessionId=this.$store.getters.token;
+      const baseUrl = this._rootRestUrl;
+
+
+      const xhr = new XMLHttpRequest();
+        xhr.open('GET', baseUrl + "/api/PDF/DownloadSnagPDF/?snagKey="+snagKey, true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+        xhr.responseType = 'blob';
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+              if (window.navigator.msSaveOrOpenBlob) {
+                  window.navigator.msSaveBlob(this.response, aFileName);
+                } else {
+                  const downloadLink = window.document.createElement('a');
+                  const contentTypeHeader = xhr.getResponseHeader("Content-Type");
+                  downloadLink.href = window.URL.createObjectURL(new Blob([this.response], { type: contentTypeHeader }));
+                  downloadLink.download = aFileName;
+                  document.body.appendChild(downloadLink);
+                  downloadLink.click();
+                  document.body.removeChild(downloadLink);
+                }
+            }
+        };
+        xhr.send(null);
+
+
+
+  /*    let formData = JSON.stringify({});
+          let config = {
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+          };
+
+        try{  
+         await  axios
+            .get(baseUrl + "/api/PDF/DownloadSnagPDF/?snagKey="+snagKey, formData, config)
+            .then((response) => {
+               this.downloadedSnagPDF = response.data;
+               
+
+              // var fileName = 'Report '+this.format_date(DateFrom, 'YYYY-MM-DD')+" - "+this.format_date(DateTo, 'YYYY-MM-DD');
+               this.downloadPDF(this.downloadedSnagPDF, snagCode + " - "+ snagTitle +".pdf");
+              
+            })           
+           
+
+          } catch (error) {
+          
+                if(error.response.status == 401){
+                  alert("Your session is expired! Please login");
+                  localStorage.clear();
+                    // document.location = '/';
+                }
+              this.displayUnInvoiceConfirm=false;
+
+              this.displayInfoDialog=true;
+              this.InfoModalHeader='Error '+error.response.status;
+              this.InfoModalMessage=error.response.data.Message;
+              this.isLoading = false; 
+
+       }   
+
+          // after every request 
+          // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+            this.extendTime(); // extend timeout to show expire session dialog
+            // ---------------------
+
+*/
+
+    },
+
 
     selectingForInvoice(clickedID){
      
@@ -1240,8 +1397,7 @@ export default {
         
         const baseUrl = this._rootRestUrl;
               
-       // let formData = JSON.stringify({sessionId:sessionId,tripsToInsert:[{key:'',from:this.newSnagFrom,to:this.newSnagTo,fixedCosts:this.newSnagCode,userEmail:'',date:SnagDate,cargoName:this.newSnagTitle,distance:this.newSnagStatus,distanceCosts:this.newSnagStatusCosts,companyName:this.newSnagCompanyName,comments:this.newSnagComments}] });
-        let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'Snag',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
+      let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'Snag',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
 
         let config = {
             headers: {
@@ -1499,12 +1655,13 @@ export default {
 
 
     downloadClick(){
-      alert("Download clicked")
+     // alert("Download clicked")
     } ,
 
      refreshData(){
       
         //get selected dates
+      if(this.fromDate.length>0){  
         if (this.fromDate.length!=10){
             this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
         }
@@ -1512,6 +1669,7 @@ export default {
         if (this.toDate.length!=10){
             this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
         }
+      }
      
       // and go for trips
       this.getSnags();
@@ -1634,13 +1792,7 @@ export default {
      
  //get selected dates
 
-        if (this.fromDate.length!=10){
-            this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
-        }
-
-        if (this.toDate.length!=10){
-            this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
-        }
+       
 
 
           //save dates to local storage so it remebeer when swithing tabs:
@@ -1664,7 +1816,7 @@ export default {
         
           const baseUrl = this._rootRestUrl;
           
-          let formData = JSON.stringify({ pageNumber: this.snagsPage });
+       
           let config = {
             headers: {
               "Content-Type": "application/json",
@@ -1676,42 +1828,152 @@ export default {
           /*  captionFilter:'',
               codeFilter:'', 
           */
-          var addOnFilter = '';  
+          var addOnFilter = [] 
+          var isthisLike = false;
 
-            if(this.captionFilter != '' && this.captionFilter != null){
-              addOnFilter += '&caption='+this.captionFilter;
-            }
+          
+          if(this.captionFilter != '' && this.captionFilter != null){
+         
+              if(this.captionFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+              addOnFilter.push({name:'caption', value:this.captionFilter,isLike:isthisLike,isDate:false});
+           }
+
+
+
             if(this.codeFilter != '' & this.codeFilter != null){
-              addOnFilter += '&code='+this.codeFilter;
+              if(this.codeFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+           addOnFilter.push( {name:'code', value:this.codeFilter,isLike:isthisLike,isDate:false});
             }
 
             if(this.statusFilter != '' & this.statusFilter != null){
-              addOnFilter += '&status='+this.statusFilter;
+              if(this.statusFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+                  }
+          addOnFilter.push( {name:'status', value:this.statusFilter,isLike:isthisLike,isDate:false});
             }
 
             if(this.worksPackageFilter != '' & this.worksPackageFilter != null){
-              addOnFilter += '&worksPackage='+this.worksPackageFilter;
+           
+              if(this.worksPackageFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+
+          addOnFilter.push({name:'worksPackage', value:this.worksPackageFilter,isLike:isthisLike,isDate:false});
+
+           }
+
+           if(this.areaFilter != '' & this.areaFilter != null){
+            if(this.areaFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+             addOnFilter.push({name:'area', value:this.areaFilter,isthisLike:true,isDate:false});
             }
 
+           if(this.closedByFilter != '' & this.closedByFilter != null){
+            if(this.closedByFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+            addOnFilter.push({name:'closedBy', value:this.closedByFilter,isLike:isthisLike,isDate:false});
+            }
+
+            
+           if(this.actionByFilter != '' & this.actionByFilter != null){
+            if(this.actionByFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+            addOnFilter.push({name:'assignedTo', value:this.actionByFilter,isLike:isthisLike,isDate:false});
+            }
+
+        
+            if(this.createdByFilter != '' & this.createdByFilter != null){
+              if(this.createdByFilterMode=='contains'){
+                isthisLike = true;
+              }else{
+                isthisLike = false;
+              }
+           addOnFilter.push({name:'createdBy', value:this.createdByFilter,isLike:isthisLike,isDate:false});
+           
+         }
+
+
+         //created date filter
+     //   var from = '2023-01-01';
+   //     var to = '2023-02-03';
+
+       // from = moment(from);
+
+      //  from = (moment(from).format('x'));
+      //  to = (moment(to).format('x'));
+
+    //  from =moment(from).format('x')*1+621355968000000000;
+   //   to =moment(to).format('x')*1+621355968000000000;
+
+      
+ 
+   if (this.fromDate != undefined && this.toDate != undefined && this.fromDate != null && this.toDate != null && this.fromDate != '' && this.toDate != '' ) {
+ 
+            var from =  this.fromDate;
+            var to = this.toDate;
+
+            from = ((moment(from).format('x'))*10000)+621355968000000000 ;
+            to =  ((moment(to).format('x'))*10000)+621355968000000000 ;
+
+            addOnFilter.push({name:'created', value:from+','+to,isLike:isthisLike,isDate:true});
+     
+    }
+
+
+         
+         //    addOnFilter += ']';  
 
             if(this.searchQuery!=''){
               addOnFilter += '&searchQuery='+this.searchQuery;
             }
 
+      /*     this.createdByFilter = event.filters.createdBy.matchMode;
+          this.actionByFilter = event.filters.assignedTo.matchMode;
+          this.closedByFilter = event.filters.closedBy.matchMode;*/
+          
            
             var pageA='';
               if(all=='all'){
                 pageA=0;
                 this.pageSize=this.totalRecords
-                this.pageSize=100;
+               // this.pageSize=100;
               }else{
                  pageA=+this.snagsPage;
-                 this.pageSize=100;
+                
+              //    this.pageSize=100;
               }
-         
-         try{
+        
+
+              let formData = { pageSize:this.pageSize,pageNumber:pageA,searchQuery:this.searchQuery,filters:addOnFilter}; 
+
+        
+              formData=JSON.stringify(formData);
+   
+              try{
+
            await axios
-            .get(baseUrl + "/api/Snags/GetAllSnags/?pageSize="+this.pageSize+"&pageNumber="+pageA + addOnFilter , formData, config)
+            .post(baseUrl + "/api/Snags/GetAllSnags/" , formData, config)
             .then((response) => {
               
                         
@@ -1736,7 +1998,7 @@ export default {
               }
            })
            
-
+           $('#sidebar').click();
 
           } catch (error) {
            
@@ -1815,9 +2077,7 @@ export default {
       },
 
 
-      onRows(event){
-        alert(event)
-      },
+     
 
       onRowClick(event) {
       
@@ -2309,7 +2569,9 @@ export default {
 
    
         if (snagPictures.length >0){
-          
+        this.snagNotes =  this.snagDetailsData['notes'];
+     
+
          this.snagImages = snagPictures;
           
           this.picturesTabShow = true;
@@ -2496,6 +2758,32 @@ export default {
           this.isLoading = false; 
     },
 
+    downloadPDF(){
+      
+        $('#downloadPDFlink').remove(); 
+          
+        /*	const element = document.createElement("a");
+
+          element.setAttribute("href", `data:application/pdf;base64,${base64PDF}`);
+          element.setAttribute("download", filename);
+          element.style.display = "none";
+
+          document.body.appendChild(element);
+          element.click();
+          document.body.removeChild(element);
+          this.isLoading = false; */
+
+      /*  const aHref =  `data:application/pdf;base64,${base64PDF}`;
+
+
+          $('body').append('<a id="downloadPDFlink" download="'+filename+'" href="'+aHref+'">LINK</a>');
+          $('#downloadPDFlink').click();*/
+
+
+          
+
+    },
+
     formatMoney(number, decPlaces, decSep, thouSep, symbol) {
         decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces,
         decSep = typeof decSep === "undefined" ? "." : decSep;
@@ -2535,7 +2823,8 @@ export default {
         },
 
         onPage(event){
-
+        
+          this.pageSize = event.rows;
           this.snagsPage = ((event['originalEvent']['page'])*1) + 1;
           this.getSnags();
         
@@ -2559,43 +2848,90 @@ export default {
             this.getSnags();
           }
         },
-
+        
         onFilter(event){
-         // console.table(event.filters.caption.value)
+ 
+                      
+          this.captionFilter = event.filters.caption.constraints[0].value;
+          this.codeFilter = event.filters.code.constraints[0].value;
+          this.statusFilter = event.filters.status.constraints[0].value;
+          this.worksPackageFilter = event.filters.worksPackage.constraints[0].value;
+          this.areaFilter = event.filters.area.constraints[0].value;
+          this.createdByFilter = event.filters.createdBy.constraints[0].value;
+          this.actionByFilter = event.filters.assignedTo.constraints[0].value;
+          this.closedByFilter = event.filters.closedBy.constraints[0].value;
+
+                      
+                         
+                  if (this.filters.caption.value === null){
+                       this.filters.caption.constraints[0].value=null;
+                       this.filters.caption.value=null;
+                  }
+
+                  if (this.filters.code.value === null){
+                      this.filters.code.constraints[0].value=null;
+                      this.filters.code.value=null;
+                  }
+
+                  if (this.filters.status.value === null){
+                      this.filters.status.constraints[0].value=null;
+                      this.filters.status.value=null;
+                  }
+
+                  if (this.filters.worksPackage.value === null){
+                      this.filters.worksPackage.constraints[0].value=null;
+                      this.filters.worksPackage.value=null;
+                  }
+
+                  if (this.filters.area.value === null){
+                      this.filters.area.constraints[0].value=null;
+                      this.filters.area.value=null;
+                  }
+
+                  if (this.filters.createdBy.value === null){
+                      this.filters.createdBy.constraints[0].value=null;
+                      this.filters.createdBy.value=null;
+                  }
+
+                  if (this.filters.assignedTo.value === null){
+                      this.filters.assignedTo.constraints[0].value=null;
+                      this.filters.assignedTo.value=null;
+                  }
+
+                  if (this.filters.closedBy.value === null){
+                      this.filters.closedBy.constraints[0].value=null;
+                      this.filters.closedBy.value=null;
+                  }
+      
+            
+
+      
+          //"how" we filter
+          this.captionFilterMode = event.filters.caption.constraints[0].matchMode;
+          this.codeFilterMode = event.filters.code.constraints[0].matchMode;
+          this.statusFilterMode = event.filters.status.constraints[0].matchMode;
+          this.worksPackageFilterMode= event.filters.worksPackage.constraints[0].matchMode;
+          this.areaFilterMode = event.filters.area.constraints[0].matchMode;
+          this.createdByFilterMode = event.filters.createdBy.constraints[0].matchMode;
+          this.actionByFilterMode = event.filters.assignedTo.constraints[0].matchMode;
+          this.closedByFilterMode = event.filters.closedBy.constraints[0].matchMode;
           
-          this.captionFilter = event.filters.caption.value;
-          this.codeFilter = event.filters.code.value;
-          this.statusFilter = event.filters.status.value;
-          this.worksPackageFilter = event.filters.worksPackage.value;
-
-
-
-
-       //   var captionFilterJson =  event.filters.caption;
-         
-         /*  captionFilterJson.forEach((value) => {
-            alert(value)
-                if(value['value']!=''  && value['value']!=null){
-                    this.captionFilter = value['value'];
-                   
-                }
-            });*/
-
-         // alert(event.filters.caption.matchMode.value)
-
-       //     this.captionFilter = event.filters.caption.matchMode.value;
-
-         /* var codeFilterJson =  event.filters.code.matchMode;
-          
-            codeFilterJson.forEach((value) => {
-                if(value['value']!='' && value['value']!=null){
-                    this.codeFilter = value['value'];
-                }
-            });*/
-
+          //if something filtered then filter icon should be yellow
+          if(this.captionFilter != null){$('.captionColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.captionColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.codeFilter != null){$('.codeColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.codeColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.statusFilter != null){$('.statusColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.statusColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.worksPackageFilter != null){$('.workspackageColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.workspackageColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.areaFilter != null){$('.areaColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.areaColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.createdByFilter != null){$('.openedColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.openedColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.actionByFilter != null){$('.assignedToColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.assignedToColumn .pi-filter-icon').removeClass('yellowIcon')}
+          if(this.closedByFilter != null){$('.closedByColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.closedByColumn .pi-filter-icon').removeClass('yellowIcon')}
+        
     
-      this.getSnags();
-
+         
+          this.getSnags();
+                  
+          
+        
         },
 
 
@@ -2701,6 +3037,19 @@ export default {
   },
   
   mounted() {
+   
+    //on load I must clear all filters !!
+   /* this.filters.caption.value = null;
+    this.filters.code.value = null;
+    this.filters.status.value = null;
+    this.filters.worksPackage.value = null;
+    this.filters.area.value = null;
+    this.filters.createdBy.value = null;
+    this.filters.assignedTo.value = null;
+    this.filters.closedBy.value = null;*/
+
+
+
 
   
     //on click anywhere close context menu 
@@ -2711,7 +3060,7 @@ export default {
     // get dates from localstorage if exists so it remembers when changing tabs:
     // if not exists then means user just enters the application so give me this week dates
 
-        if(localStorage.getItem('fromDate')!=undefined){
+    /*    if(localStorage.getItem('fromDate')!=undefined){
             this.fromDate = localStorage.getItem('fromDate');
         }else{
             this.fromDate = moment().startOf('isoWeek').format('DD/MM/YYYY');
@@ -2721,7 +3070,7 @@ export default {
             this.toDate = localStorage.getItem('toDate');
         }else{
             this.toDate  = moment().endOf('isoWeek').format('DD/MM/YYYY');
-        }
+        }*/
     
      //  ------ end default dates  -------- / 
        
@@ -2890,7 +3239,7 @@ export default {
 .p-datatable .p-sortable-column.p-highlight .p-sortable-column-icon{color:white}
 
 #refreshButton{margin-left:6px;height:34px;}
-#newSnagButton, #downloadReport, #invoiceSelected{margin-left:0;height:34px;}
+#newSnagButton, #downloadReport, #invoiceSelected, .donwloadPDFbutton{margin-left:0;height:34px;}
 .p-datatable .p-datatable-header {background: none;border:none}
 
 .p-datatable .p-datatable-tbody > tr > td {
@@ -2945,6 +3294,8 @@ padding-left:0px;
 transition: 0.5s;
 box-shadow: 0px 20px 7px #cccccc;
 z-index:11;
+position:absolute;
+display:block;
 }
 .RightSidepanel .closebtn {
 z-index:1000;
@@ -2957,7 +3308,7 @@ color:#343434;
 text-decoration:none;
 }
 .closedPanel{width:0px}
-.openedPanel{width:750px}
+.openedPanel{width:750px;}
 
 .cursorHand {cursor:pointer}
 .closePanelButton{margin-right:20px}
@@ -3126,7 +3477,7 @@ text-decoration:none;
 
         .actionButtonsHolderTable{
           display: flex;
-          justify-content: center;
+          justify-content: right;
           width: 100%;
           height: 100%;
         }
@@ -3172,9 +3523,10 @@ text-decoration:none;
 .statusBlock{
   display:block;
   width:100%;
-  padding:5px;
+  padding:4px;
   color:white;
   border-radius:5px;
+  font-size:80%
 }
 
 .detailsHeadlineCode{color:#777 !important;font-size:90%;display:block}
@@ -3194,10 +3546,27 @@ text-decoration:none;
 </ul>*/
 
 .p-dropdown-item[aria-label="Starts with"]{display:none}
-.p-dropdown-item[aria-label="Contains"]{display:none}
+/*.p-dropdown-item[aria-label="Contains"]{display:none}*/
 .p-dropdown-item[aria-label="Not contains"]{display:none}
 .p-dropdown-item[aria-label="Ends with"]{display:none}
 .p-dropdown-item[aria-label="Not equals"]{display:none}
+
+.dataTableHolder{overflow: hidden;}
+
+.projectNameHeadline{font-weight:bold;color:black}
+.documentTypeHeadline{font-size:80%;color:#888}
+
+.yellowIcon{color:yellow}
+.myClearButton{
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 58px !important;
+  z-index: 9;
+  background:red !important;
+  border:red;
+ 
+}
 
 </style>
 
