@@ -107,7 +107,14 @@
            </template>
 
 
-         
+    <Column class="openedColumn" field="checked" header="Check All">
+      <template #header>
+        <Checkbox v-model="checkAll" @change="checkAllHandler($event)" :binary="true" />
+      </template>
+      <template #body="{data}">
+          <Checkbox v-model="data.checked" :binary="true" />
+      </template>
+    </Column>
 
     <Column class="openedColumn"  field="date" filterField="createdBy" header="Opened" style="display:grid; min-width: 10rem;min-height:43px;">
     
@@ -815,7 +822,7 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import Dropdown from 'primevue/dropdown';
 import FileUpload from 'primevue/fileupload';
-//import Checkbox from 'primevue/checkbox';
+import Checkbox from 'primevue/checkbox';
 import Timeline from 'primevue/timeline';
 import axios from "axios";
 import $ from "jquery";
@@ -842,12 +849,13 @@ export default {
     //InputNumber,
     Dropdown,
     FileUpload,
-    //Checkbox
+    Checkbox
   },
  emits:['extend-session','showSearchbar'],
 
   data() {
     return {
+      checkAll: false,
       ProjectRef:'61196AD9FF1A440A9267D3044E8B595E',
       showTable: true,
 
@@ -1090,6 +1098,12 @@ export default {
     };
   },
   methods: {
+    checkAllHandler() {
+      // TODO: implement real endpoint action
+      this.allSnags.forEach(snag => {
+        snag.checked = this.checkAll;
+      })
+    },
 
    async downloadSnagPDF(){
       const snagKey = this.snagDetails['snag']['key'];
@@ -2723,6 +2737,8 @@ export default {
         const entries = Object.entries(value);
 
         entries.forEach((value2) => {
+
+          value2.checked = false;
               
               if(value2[0]=='invSent'){
                   var newType = '';
