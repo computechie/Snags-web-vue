@@ -142,7 +142,7 @@
                   </div>
 
                   <hr />
-                  <a class="dropdown-item" href="" target="_blank"
+                  <a class="dropdown-item" href="#" target="_blank" @click="changepasswordClick"
                     ><i class="fa-solid fa-lock blueIcons"></i> Change password</a
                   >
                   <hr />
@@ -209,9 +209,79 @@
       </div>
     </div>
   </div>
+
+<!-- Change Password Dialog-->
+<Dialog
+  @update:visible="handleClose"
+  v-model:visible="changePasswordDialog"
+  modal
+  :style="{ width: '50rem' }"
+  :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+>
+  <template #header>
+    Change Password
+  </template> 
+
+  <div class="container" id="formContainer">
+    <div class="row insertFormRow align-items-center">
+      <div class="col-md-3">
+        <label for="currentPasswordInput">Current Password *</label>
+      </div>
+      <div class="col-md-9">
+        <InputText
+          @input="currentPasswordOK=true"
+          id="currentPasswordInput"
+          v-model="currentPasswordInput"
+        />
+        <InlineMessage v-if="!currentPasswordOK">This field is required</InlineMessage>
+      </div>
+    </div>
+
+    <div class="row insertFormRow align-items-center">
+      <div class="col-md-3"><label for="newPasswordInput">New Password *</label></div>
+      <div class="col-md-9">
+        <InputText
+          @input="newPasswordOK=true"
+          id="newPasswordInput"
+          v-model="newPasswordInput"
+        />
+        <InlineMessage v-if="!newPasswordOK">This field is required</InlineMessage>
+      </div>
+    </div>
+  </div>
+
+  <div class="row insertFormRow align-items-center">
+    <div class="col-md-6 text-left">
+      <Button
+        @click="closeChangePasswordDialog"
+        style="min-width:120px"
+        v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"
+        icon="pi pi-times-circle"
+        type="button"
+        class="p-button-text redButton"
+      >Cancel</Button>
+
+    </div>
+    <div class="col-md-6 text-end">
+      <Button
+        style="min-width:120px"
+        v-tooltip.bottom="{ value: 'Update Password', showDelay: 1000, hideDelay: 300 }" 
+        type="button"
+        icon="pi pi-pencil"
+        class="p-button-text"
+        @click="updatePassword"
+      >Update</Button>
+    </div>
+  </div>
+</Dialog>
 </template>
 
 <script>
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import InlineMessage from 'primevue/inlinemessage';
+
 export default {
   props: [
     "backgroundStyle",
@@ -222,11 +292,33 @@ export default {
     "emitSearch",
   ],
 
+  components: {
+    Dialog,
+    InputText,
+    Button,
+    InlineMessage
+  },
+
   data() {
-    return {};
+    return {
+      changePasswordDialog: false,
+      currentPasswordInput: '',
+      newPasswordInput: '',
+      currentPasswordOK: true,
+      newPasswordOK: true,
+    };
   },
   mounted() {},
   methods: {
+    updatePassword  () {
+      alert('TODO: implement update password');
+    },
+    closeChangePasswordDialog() {
+      this.changePasswordDialog = false;
+    },
+    handleClose(){
+      this.changePasswordDialog = false;
+    },
     userInitials() {
       //const fullName = this.$store.getters.getUserFullName;
       const fullName ="Firstname Lastname";
@@ -240,6 +332,10 @@ export default {
     clickOnHelp() {
     
       window.open(this._rootlinkToHelpFile, "_blank");
+    },
+    changepasswordClick(e) {
+      e.preventDefault();
+      this.changePasswordDialog = true;
     },
     signoutClick() {
       this.$store.dispatch("logout");
