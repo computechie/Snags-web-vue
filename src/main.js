@@ -51,7 +51,7 @@ const VersionInfo = defineAsyncComponent(() =>
 const router = createRouter({
   scrollBehavior() {
     // always scroll to top
-   /* console.log(to);
+    /* console.log(to);
     console.log(from);
     console.log(savedPosition)*/
     return { top: 0 }
