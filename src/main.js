@@ -90,14 +90,19 @@ const router = createRouter({
                  
         // PAGES
         {
-              
             path: "/pages/snags",
             component: PageSnags,
             name: "PageSnags",
             meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            
-       
-        },{
+
+        },
+        {
+          path: "/pages/dashboard",
+          component: PageDashboard,
+          name: "PageDashboard",
+          meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
+        },
+        {
                     
             
             path: "/pages/manageUsers",
@@ -136,6 +141,7 @@ router.beforeEach(function (to, from, next) {
 
 const app = createApp(App);
   import store from "./store/index.js";
+import PageDashboard from "./components/pages/Dashboard/PageDashboard.vue";
 
   app.config.globalProperties.emitter = emitter;
 

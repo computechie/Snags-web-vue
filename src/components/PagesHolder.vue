@@ -44,6 +44,14 @@
           iconsize="21"
           :isActive="isActive"
         ></menu-link>
+
+        <menu-link
+          atitle="Dashboard"
+          link="/pages/dashboard"
+          icon="fa-solid fa-tachometer-alt"
+          iconsize="21"
+          :isActive="isActive"
+        ></menu-link>
        
        
         <menu-link
