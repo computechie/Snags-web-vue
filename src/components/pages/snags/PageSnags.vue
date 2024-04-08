@@ -10,25 +10,25 @@
         <i class="pi pi-search" @click="onSearch"/>
     </span>
   <!-- -------------------  end    of search box      -->
-  
+
 <div class="dataTableHolder"  style="width:100%;" @contextmenu = "showContextMenu($event)">
-  <DataTable  
-            :totalRecords="totalRecords" 
-            :id="dataTable" 
-            :value="allSnags" lazy 
-            :paginator="true" 
-            :rows="pageSize"  
+  <DataTable
+            :totalRecords="totalRecords"
+            :id="dataTable"
+            :value="allSnags" lazy
+            :paginator="true"
+            :rows="pageSize"
             :first="first"
-            dataKey="id"  stripedRows v-model:filters="filters" filterDisplay="menu" key="key" 
-           
+            dataKey="id"  stripedRows v-model:filters="filters" filterDisplay="menu" key="key"
+
             @page="onPage($event)"
             @sort="onSort($event)"
             @filter="onFilter($event)"
-                       
+
             @rowSelect="onRowSelect"
             @rowClick="onRowClick"
             @rowsChange="onRows($event)"
-            
+
 
             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
             paginatorStart="CurrentPageReport"
@@ -37,19 +37,19 @@
             currentPageReportTemplate="Showing {first} to {last} of total {totalRecords} snags"
             :globalFilterFields="['code','title' ]"
             selectionMode="single"
-            
+
 
             :loading="loading1"
-            scrollable 
+            scrollable
             :scrollHeight="tableHeight"
             >
-   
+
 
 
               <template #header >
-                    
+
                  <!-- if table is lazy load then global filter (search) in table not working so it can not be here, its on top of this page! PrimeVue bug!? -->
-                <!-- 
+                <!--
                 <div style="display:none" class="flex justify-content-between">
                       <span class="p-input-icon-left" id="searchBox">
                             <i class="pi pi-search" />
@@ -66,7 +66,7 @@
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label="Download Report"/>
                         &nbsp;
                         <Button v-if="showInvoiceSelectedButton && userType=='ADMIN'" style="min-width:120px" v-tooltip.bottom="{ value: 'Invoice selected', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-check-circle" class="p-button-text" id="invoiceSelected" @click="invoiceSelected" label="Invoice selected"/>
-                       
+
                         <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Load all snags', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="getSnags('all')" label="Load all snags"/>
                         &nbsp;
                      </div>
@@ -77,7 +77,7 @@
                         <Button v-tooltip.bottom="{ value: 'Download report', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-download" class="p-button-text" id="downloadReport" @click="downloadReport" label=""/>
                         &nbsp;
                         <Button v-if="showInvoiceSelectedButton && userType=='ADMIN'" style="min-width:120px" v-tooltip.bottom="{ value: 'Invoice selected', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-check-circle" class="p-button-text" id="invoiceSelected" @click="invoiceSelected" label="Invoice selected"/>
-                       
+
                         <Button  v-tooltip.bottom="{ value: 'Load all snags', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-pencil" class="p-button-text" id="newSnagButton" @click="getSnags('all')" label=""/>
                         &nbsp;
                      </div>
@@ -98,9 +98,9 @@
                     </div>
 
                 </template>
-           
+
            <template #empty>
-                    
+
            </template>
            <template #loading>
                     Loading data. Please wait...
@@ -117,18 +117,18 @@
     </Column>
 
     <Column class="openedColumn"  field="date" filterField="createdBy" header="Opened" style="display:grid; min-width: 10rem;min-height:43px;">
-    
+
       <template #body="{ data }">
           <span class="closedByName">{{data.createdBy}}</span>
-          <span class="closedByDate"> {{format_date(data.created   ,'DD/MM/YYYY') }}  </span>   
-        
+          <span class="closedByDate"> {{format_date(data.created   ,'DD/MM/YYYY') }}  </span>
+
       </template>
        <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback();" label="Clear"/>     
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback();" label="Clear"/>
 
-       </template> 
-    
+       </template>
+
     </Column>
 
 
@@ -136,99 +136,99 @@
     <Column class="codeColumn" field="code" header="Code"  bodyStyle="text-align: left"  style="min-height:43px;">
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
         </template>
     </Column>
     <Column class="captionColumn" field="caption" header="Item"  bodyStyle="text-align: left"  style="text-align: left;min-height:43px;min-width:320px">
-       
+
       <template #body="{ data }">
           <div style="display:inline-block;width:85%;padding-right:50px">{{data.caption}}
-             
+
           </div>
           <div  style="display:inline-block;display:block;width:15%" v-if="data.hasPhoto != ''">
-            
-            <img v-if="data.caption=='Architrave'" src="/images/pin.png" style="height:18px"> 
-            <img v-if="data.caption!='Architrave'" src="/images/pin.png" style="height:18px;visibility:hidden"> 
+
+            <img v-if="data.caption=='Architrave'" src="/images/pin.png" style="height:18px">
+            <img v-if="data.caption!='Architrave'" src="/images/pin.png" style="height:18px;visibility:hidden">
             <i class="fa fa-camera"></i></div>
 
         </template>
-      
-      
-      
+
+
+
         <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
         </template>
-    
+
     </Column>
     <Column class="statusColumn" field="status" header="Status" bodyStyle="text-align: left"  style=";min-height:43px;max-width:100px !important">
-      
+
       <template #body="{ data }">
           <div v-if="data.status=='Open'" class="statusOpen statusBlock">{{ data.status }}</div>
           <div v-if="data.status=='Closed'" class="statusClosed statusBlock">{{ data.status }}</div>
           <div v-if="data.status=='Actioned'" class="statusActioned statusBlock">{{ data.status }}</div>
           <div v-if="data.status=='Returned'" class="statusReturned statusBlock">{{ data.status }}</div>
 
-          
+
 
       </template>
-     
+
       <template #filter="{filterModel}">
           <!--<InputText v-model="filterModel.value" :options="allCompanies" filter optionLabel="name" placeholder="Select Company"></InputText>-->
           <Dropdown v-model="filterModel.value" :options="allStatuses" filter optionLabel="name" optionValue="value" placeholder="Select Status"></Dropdown>
-          <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
+          <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
         </template>
 
-        
+
     </Column>
 
     <Column class="assignedToColumn" field="assignedTo" filterField="assignedTo" header="Action By"  bodyStyle="text-align: left"  style="display:grid;;min-height:43px;">
-    
+
       <template #body="{ data }" >
           <span class="closedByName">{{data.assignedTo}}</span>
-          <span class="closedByDate"> {{format_date(data.date   ,'DD/MM/YYYY') }}  </span>   
-        
+          <span class="closedByDate"> {{format_date(data.date   ,'DD/MM/YYYY') }}  </span>
+
       </template>
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
-        </template> 
-    
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
+        </template>
+
     </Column>
 
-    
+
     <Column class="areaColumn" field="area" header="Location"  bodyStyle="text-align: left"  style=";min-height:43px;">
         <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
-        </template> 
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
+        </template>
     </Column>
-    
-    
+
+
     <Column class="workspackageColumn" field="worksPackage" header="Works Package"  bodyStyle="text-align: left"  style="min-height:43px;">
-      
+
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Search"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
-        </template> 
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
+        </template>
       </Column>
-    
- 
 
-    
+
+
+
     <Column class="closedByColumn" field="closedBy"  filterField="closedBy"  header="Closed By"  bodyStyle="text-align: left"  style="display: grid;min-height:43px;">
       <template #body="{ data }">
           <span class="closedByName">{{data.closedBy}}</span>
-          <span class="closedByDate"> {{format_date(data.signOffDate   ,'DD/MM/YYYY') }}  </span>   
-        
+          <span class="closedByDate"> {{format_date(data.signOffDate   ,'DD/MM/YYYY') }}  </span>
+
       </template>
       <template #filter="{filterModel,filterCallback}">
             <InputText type="text" v-model="filterModel.value" @keydown.enter="filterCallback()" class="p-column-filter" placeholder="Enter name"/>
-            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>     
-        </template> 
+            <Button type="button"  class="p-button-text myClearButton" @click="filterModel.value = null;filterCallback()" label="Clear"/>
+        </template>
     </Column>
 
-   
+
     <Column field="" header="" bodyStyle="text-align: left"  style="min-height:43px;">
       <template #header >
           <div style="right: 20px;  position: absolute;">
@@ -236,22 +236,22 @@
           </div>
         </template>
         <template #body="">
-          
+
           <div class="actionButtonsHolderTable">
-           
+
             <div class="fa-stack fa-2x actionIcons" style="font-size:15px"  v-tooltip.bottom="{ value: 'Edit Snag', showDelay: 1000, hideDelay: 300 }"  @click="editClick">
               <i class="fa-solid fa-square fa-stack-2x"></i>
               <i class="fa-stack-1x fa-solid fa-pen-to-square" style="color: white"></i>
             </div>
-            
-           
+
+
             <div  class="fa-stack fa-2x actionIcons" style="font-size:15px;color:#aa0000" v-tooltip.left="{ value: 'Delete Snag', showDelay: 1000, hideDelay: 300 }" @click="deleteClick">
               <i class="fa-solid fa-square fa-stack-2x"></i>
               <i class="fa-stack-1x fa-solid fa-trash-can" style="color: white"></i>
             </div>
 
           </div>
-        
+
         </template>
 
 
@@ -261,14 +261,14 @@
 
 
     <template #paginatorstart>
-    
-    </template>         
-    <template #paginatorend>
-    
-    </template>  
-    
 
-   
+    </template>
+    <template #paginatorend>
+
+    </template>
+
+
+
 
 
 </DataTable>
@@ -280,82 +280,82 @@
 
 
 <div id="RightSidepanel" class="RightSidepanel" :class="panelClass">
-			
-		
-			
+
+
+
         <div class="row">
           <div class="col-md-12 text-end">
             <i class="pi pi-times cursorHand closePanelButton" @click="closePanel"></i>
           </div>
         </div>
 
-        
+
         <div class="row">
           <div class="col text-center">
             <h5 class="detailsHeadlineCode">{{ snagDetailsData.code }}</h5>
             <h5 class="detailsHeadline">{{ snagDetailsData.caption }}</h5>
 
-           
+
 
 
           </div>
-        </div>	
+        </div>
         <div class="row">
           <div class="col text-center">
             <div :class="'statusBlock status'+snagDetailsData.status">{{ snagDetailsData.status }}</div>
-           
+
           </div>
         </div>
-        
 
-        <div class="text-end" id="editIconsPanel"> 
 
-          
+        <div class="text-end" id="editIconsPanel">
+
+
 
             <div class="actionButtonsHolder">
 
-           
+
             <div   class="fa-stack fa-2x actionIcons" style="font-size:15px" v-tooltip.bottom="{ value: 'Edit snag', showDelay: 1000, hideDelay: 300 }" @click="editClick">
 
                 <i class="fa-solid fa-square fa-stack-2x"></i>
                 <i class="fa-stack-1x fa-solid fa-pen-to-square" style="color: white"></i>
-            
+
             </div>
 
 
             <div    class="fa-stack fa-2x actionIcons" style="font-size:15px;color:#aa0000" v-tooltip.left="{ value: 'Delete snag', showDelay: 1000, hideDelay: 300 }"  @click="deleteClick">
-              
+
                 <i class="fa-solid fa-square fa-stack-2x"></i>
                 <i class="fa-stack-1x fa-solid fa-trash-can" style="color: white"></i>
-            
-            </div>
 
             </div>
 
+            </div>
+
 
             </div>
 
-                
-            
+
+
         <div class="row" style="">
           <div class="col text-center" style="padding:19px">
-           
-            <TabView v-model:activeIndex="activeTab">    
-              
+
+            <TabView v-model:activeIndex="activeTab">
+
               <TabPanel header="Details">
 <div class="row" style="margin-bottom:10px">
   <div class="col text-start" style="padding:0">
-      
+
       <Button v-tooltip.bottom="{ value: 'Download PDF', showDelay: 1000, hideDelay: 300 }" type="button" icon="pi pi-file-pdf" class="p-button-text donwloadPDFbutton" @click="downloadSnagPDF" label="Download PDF"/>
-                     
+
 
   </div>
 </div>
-          
-                
-            
+
+
+
             <table class="table table-striped table-sm" id="detailsTable">
-             
+
              <tbody>
               <tr>
                 <td style="width:160px">Date Opened:</td>
@@ -385,58 +385,58 @@
                 <td>Closed by:</td>
                 <td>{{ snagDetailsData.closedBy }}</td>
               </tr>
-           
+
 
               <tr>
                 <td>Notes:</td>
                 <td><textarea rows="5" v-text="snagDetailsData.notes" style="width:100%" readonly></textarea></td>
               </tr>
 
-         
+
             </tbody>
-            
+
 
            </table>
 
            <div class="row">
                 <div class="col-md-6 text-left" style="padding:0">
 
-                  
-                  
+
+
                 </div>
-               
+
                 <div class="col-md-6 text-end" style="padding:0">
                       <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
                 </div>
             </div>
-          
+
           </TabPanel>
 
-         
-          
+
+
           <TabPanel :header="'Pictures (' +snagImages.length+')'"  v-if="picturesTabShow">
               <SwiperCarousel :notes="snagNotes" :tripImages="snagImages" @showloader="showloader" :openedcargoname="openedcargoname" @swiper="onSwiper" @deletePhoto="deletePhotoId"  @deletePhotomodal="deletePhotoModal" :userType="userType"/>
-             
+
              <div class="row" style="margin-top:12px">
                 <div class="col text-end" style="padding:0">
                   <Button  @click="openDialogAddPhoto" style="min-width:120px" v-tooltip.bottom="{ value: 'Add photo', showDelay: 1000, hideDelay: 300 }"  type="button" class="p-button-text addphotobutton" label="Add photo"/>
                 </div>
              </div>
-              
+
           </TabPanel>
-        
+
           <TabPanel header="Drawing">
-              
+
               <img src="/images/pindrawing.jpg">
-                 
+
              </TabPanel>
 
-          
+
 
         </TabView>
 
 
-          
+
 
 
           </div>
@@ -447,7 +447,7 @@
       <div class="col-md-12">
 
         <Timeline :value="events" align="alternate">
-          
+
           <template #marker="slotProps">
             <span class="flex w-2rem h-2rem align-items-center justify-content-center text-white border-circle z-1 shadow-1" :style="{ backgroundColor: slotProps.item.color }">
                 <i :class="slotProps.item.icon"></i>
@@ -462,7 +462,7 @@
                   <div class="historyNotes"><textarea class="textAreaComments">Comments</textarea></div>
               </div>
                 </template>
-          
+
           </Timeline>
 
 
@@ -474,35 +474,35 @@
         <Dialog modal v-model:visible="visibleImagesModal" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
           <SwiperCarousel :snagImages="snagImages"  @deletePhotomodal="deletePhotoModal"/>
         </Dialog>
-        
-       
-  
-       
-				
-</div>	
+
+
+
+
+
+</div>
 
 
  <!-- insert new trip Dialog-->
  <Dialog @update:visible="handleClose" v-model:visible="newSnagDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-         
+
         <template #header>
           Enter new snag
-        </template> 
-        
+        </template>
+
         <div class="container" id="formContainer">
-          
+
           <div class="row insertFormRow align-items-center   even">
             <div class="col-md-3"><label for="newSnagDate">Required by Date *</label></div>
             <div class="col-md-9">
               <Calendar   @change="changeDate('from')" style="margin-left:0" id="newSnagDate" class="dateDisplayInput" v-model="newSnagDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
-            
+
               <InlineMessage v-if="!newSnagDateOK">This field is required</InlineMessage>
             </div>
           </div>
 
-        
 
-         
+
+
           <div class="row insertFormRow align-items-center   ">
             <div class="col-md-3"><label for="newSnagTitle">Item *</label></div>
             <div class="col-md-9"><InputText  @input="newSnagTitleOK=true" id="newSnagTitle" v-model="newSnagTitle" />
@@ -519,45 +519,45 @@
             <div class="col-md-3"><label for="newSnagStatus">Status * </label></div>
             <div class="col-md-9">
               <Dropdown v-model="newSnagStatus" :options="allStatuses"  optionLabel="name" placeholder="Select Status"></Dropdown>
-             
+
 
             <InlineMessage v-if="!newSnagStatusOK">This field is required</InlineMessage></div>
           </div>
-        
-                  
-         
+
+
+
 
           <div class="row insertFormRow align-items-center   ">
             <div class="col-md-6 text-left">
               <Button @click="closeInsertDialog" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"  icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
-           
+
             </div>
             <div class="col-md-6 text-end">
               <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Save snag', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-pencil" class="p-button-text" @click="saveSnag" label="Save snag"/>
              </div>
           </div>
-        
+
         </div>
-          
 
 
-      </Dialog> 
+
+      </Dialog>
 
 <!-- Edit Snag Dialog-->
 <Dialog @update:visible="handleClose" v-model:visible="editSnagDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-         
+
          <template #header>
            Edit Snag
-         </template> 
-         
+         </template>
+
          <div class="container" id="formContainer">
-           
+
            <div class="row insertFormRow align-items-center   even">
              <div class="col-md-3"><label for="editSnagDate">Required by Date *</label></div>
              <div class="col-md-9">
-              
+
               <Calendar :value="editSnagDate" v-model="editSnagDate"  @change="changeDate('from')" style="margin-left:0" id="editSnagDate" class="dateDisplayInput"  showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
-             
+
                <InlineMessage v-if="!editSnagDateOK">This field is required</InlineMessage>
              </div>
            </div>
@@ -568,7 +568,7 @@
              <InlineMessage v-if="!editSnagTitleOK">This field is required</InlineMessage></div>
            </div>
 
- 
+
            <div class="row insertFormRow align-items-center   even">
              <div class="col-md-3"><label for="editSnagStatus">Status *</label></div>
              <div class="col-md-9">
@@ -578,203 +578,203 @@
            </div>
 
 
- 
+
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-3"><label for="username">Code *</label></div>
              <div class="col-md-9"><InputText @input="editSnagCodeOK=true"  id="editSnagCode" v-model="editSnagCode"/>
              <InlineMessage v-if="!editSnagCodeOK">This field is required</InlineMessage></div>
            </div>
- 
-        
-           
-          
- 
- 
+
+
+
+
+
+
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-6 text-left">
                <Button @click="closeEditDialog" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
-            
+
              </div>
              <div class="col-md-6 text-end">
                <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Save changes', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-pencil" class="p-button-text" @click="editSnag" label="Save changes"/>
               </div>
            </div>
-         
+
          </div>
-           
- 
- 
-       </Dialog> 
 
 
- <!-- dialog info --> 
+
+       </Dialog>
+
+
+ <!-- dialog info -->
  <Dialog v-model:visible="displayInfoDialog" modal  :style="{ width: '25rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <template #header=""> 
+    <template #header="">
         <h4> {{ InfoModalHeader }}</h4>
     </template>
-  
+
             <span class="font-bold text-2xl block mb-2 mt-4"></span>
             <p class="mb-0">{{InfoModalMessage }}</p>
             <div class="flex text-end gap-2 mt-4">
                 <Button label="Ok" @click="closeInfo"></Button>
-              
-            </div>          
+
+            </div>
 </Dialog>
 
- <!-- dialog confirm Delete --> 
+ <!-- dialog confirm Delete -->
  <Dialog v-model:visible="displayDeleteConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <template #header=""> 
+    <template #header="">
         <h4> Please confirm</h4>
     </template>
-  
+
             <span class="font-bold text-2xl block mb-2 mt-4"></span>
             <p class="mb-0">Are you sure that you want to Delete Snag <strong>'{{ editSnagCargoName }}'</strong>?</p>
-          
+
           <div class="row" style="margin-top:30px">
               <div class="col-md-6 text-start">
                   <Button class="redButton" label="Cancel" @click="displayDeleteConfirm=false"></Button>
               </div>
               <div class="col-md-6 text-end">
                   <Button label="Yes, delete" @click="deleteTrip"></Button>
-            </div>   
+            </div>
           </div>
-          
+
 </Dialog>
 
 
 
-<!-- dialog confirm UNinvoice --> 
+<!-- dialog confirm UNinvoice -->
 <Dialog v-model:visible="displayUnInvoiceConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <template #header=""> 
+    <template #header="">
         <h4> Please confirm</h4>
     </template>
-  
+
             <span class="font-bold text-2xl block mb-2 mt-4"></span>
             <p class="mb-0">Are you sure that you want to remove mark 'Invoiced'<br> for trip <strong>'{{ editSnagCargoName }}'</strong>?</p>
-          
+
           <div class="row" style="margin-top:30px">
               <div class="col-md-6 text-start">
                   <Button class="redButton" label="Cancel" @click="displayInvoiceConfirm=false"></Button>
               </div>
               <div class="col-md-6 text-end">
                   <Button label="Yes, remove it" @click="unInvoiceThisTrip"></Button>
-            </div>   
+            </div>
           </div>
-          
+
 </Dialog>
 
 
 <!-- Send Invoice Dialog-->
 <Dialog @update:visible="handleClose" v-model:visible="sendInvoiceDialog" modal  :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-         
+
          <template #header>
            Mark this trip as Invoiced
-         </template> 
-         
+         </template>
+
          <div class="container" id="formContainer">
-           
+
            <div class="row insertFormRow align-items-center   even">
              <div class="col-md-3"><label for="invoiceDate">Invoice Date *</label></div>
              <div class="col-md-9"><Calendar  hourFormat="24" showTime @change="changeDate('from')" style="margin-left:0" id="invoiceDate" class="dateDisplayInput" v-model="invoiceDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
-             
+
                <InlineMessage v-if="!invoiceDateOK">This field is required</InlineMessage>
              </div>
            </div>
- 
-          
- 
- 
- 
+
+
+
+
+
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-6 text-left">
                <Button @click="sendInvoiceDialog=false" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
-            
+
              </div>
              <div class="col-md-6 text-end">
                <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Mark as Invoiced', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-check-circle" class="p-button-text" @click="invoiceThisTrip" label="Mark as Invoiced"/>
               </div>
            </div>
-         
+
          </div>
-           
- 
- 
-       </Dialog> 
+
+
+
+       </Dialog>
 
 <!-- Send Multiple Invoice Dialog-->
 <Dialog @update:visible="handleClose" v-model:visible="sendMultipleInvoiceDialog" modal header="header" :style="{ width: '50rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-         
+
          <template #header>
 
             <span v-if="selectedIDsForInvoicing.length == 1">Mark selected trip as Invoiced</span>
             <span v-if="selectedIDsForInvoicing.length > 1">Mark selected <span style="font-weight:bold">{{ selectedIDsForInvoicing.length }} trips </span> as Invoiced</span>
-          
-         </template> 
+
+         </template>
 
 
-         
+
          <div class="container" id="formContainer">
-           
+
            <div class="row insertFormRow align-items-center   even">
              <div class="col-md-3"><label for="invoiceDate">Invoice Date *</label></div>
              <div class="col-md-9"><Calendar  hourFormat="24" showTime @change="changeDate('from')" style="margin-left:0" id="invoiceMultipleDate" class="dateDisplayInput" v-model="invoiceDate" showIcon dateFormat="dd/mm/yy" placeholder="dd/mm/yy" mask="99/99/9999"/>
-             
+
                <InlineMessage v-if="!invoiceDateOK">This field is required</InlineMessage>
              </div>
            </div>
- 
-          
- 
- 
- 
+
+
+
+
+
            <div class="row insertFormRow align-items-center   ">
              <div class="col-md-6 text-left">
                <Button @click="sendMultipleInvoiceDialog=false" style="min-width:120px" v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"   icon="pi pi-times-circle" type="button" class="p-button-text redButton" label="Cancel"/>
-            
+
              </div>
              <div class="col-md-6 text-end">
                <Button style="min-width:120px" v-tooltip.bottom="{ value: 'Mark as Invoiced', showDelay: 1000, hideDelay: 300 }"  type="button" icon="pi pi-check-circle" class="p-button-text" @click="invoiceMultipleTrips" label="Mark as Invoiced"/>
               </div>
            </div>
-         
+
          </div>
-           
- 
- 
-       </Dialog> 
 
 
 
- <!-- dialog confirm Delete Photo --> 
+       </Dialog>
+
+
+
+ <!-- dialog confirm Delete Photo -->
  <Dialog v-model:visible="displayDeletePhotoConfirm" modal  :style="{ width: '30rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <template #header=""> 
+    <template #header="">
         <h4> Please confirm</h4>
     </template>
-  
+
             <span class="font-bold text-2xl block mb-2 mt-4"></span>
             <p class="mb-0">Are you sure that you want to delete this photo?</p>
-          
+
           <div class="row" style="margin-top:30px">
               <div class="col-md-6 text-start">
                   <Button class="redButton" label="Cancel" @click="displayDeletePhotoConfirm=false"></Button>
               </div>
               <div class="col-md-6 text-end">
                   <Button label="Yes, delete" @click="deletePhoto"></Button>
-            </div>   
+            </div>
           </div>
-           
+
 </Dialog>
 
 
-<!-- dialog upload photo --> 
+<!-- dialog upload photo -->
 <Dialog v-model:visible="displayUploadModal" modal  :style="{ width: '60rem' }" :breakpoints="{ '1199px': '75vw', '575px': '90vw' }">
-    <template #header=""> 
+    <template #header="">
         <h4> Upload photo</h4>
     </template>
-  
+
          <div class="row" style="margin-top:30px">
               <div class="col">
-               
+
                 <FileUpload name="files[]" :customUpload="true" url="/api/upload" @uploader="customUploader($event)" :multiple="false" accept="image/*" :maxFileSize="10000000">
                   <template #empty>
                       <p>Drag and drop files to here to upload.</p>
@@ -782,25 +782,25 @@
                 </FileUpload>
 
               </div>
-              
-        </div>   
-         
-          
-      
-           
+
+        </div>
+
+
+
+
 </Dialog>
 
 <div id="div-context-menu"  class="cls-context-menu" style="left: 11px; top: 13px; display: none">
        <ul>
-        
+
           <ul>
             <li v-if="!AllPageMarked && !AllMarked"><a @click="SelectAllPage('select')">Select all records on current page</a></li>
             <li v-if="!AllPageMarked && !AllMarked"><a @click="SelectAll('select')" >Select all on all pages</a></li>
-           
+
             <li v-if="AllMarked || AllPageMarked"><a @click="SelectAll('deselect')" >Deselect All </a></li>
 
           </ul>
-       
+
        </ul>
      </div>
 
@@ -889,7 +889,7 @@ export default {
       snagDetails:[],      // all snag details includin images
       snagDetailsData:[],  //only details, without images
 
-      
+
       events:[
               {
                   "status": "created",
@@ -930,7 +930,7 @@ export default {
                   "icon":"pi pi-star",
                   "color":"lightgreen",
                   "notes":""
-                  
+
               },
               {
                   "status": "Reopened",
@@ -955,7 +955,7 @@ export default {
                   "icon":"pi pi-star",
                   "color":"lightgreen"
               }
-          ],  
+          ],
 
 
       howManyTrips:'',
@@ -1060,9 +1060,9 @@ export default {
        /*   filters: {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
                'code': {value: null, matchMode: FilterMatchMode.EQUALS},
-              
+
               //if multiple filters is posible
-               'code':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'code':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'caption': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'status':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'createdBy': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
@@ -1070,14 +1070,14 @@ export default {
                'worksPackage': {{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'closedBy':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'assignedTo': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
-               
-              
+
+
             },*/
 
             filters: {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
 
-               'code':{ constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'code':{ constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'caption': {constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'status':{ constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'createdBy': { constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
@@ -1086,7 +1086,7 @@ export default {
                'closedBy':{constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'assignedTo': {constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
             },
-            
+
     matchModes: [
         {label: 'Starts With', value: FilterMatchMode.STARTS_WITH},
         {label: 'Contains', value: FilterMatchMode.CONTAINS},
@@ -1146,21 +1146,21 @@ export default {
 
           };
 
-        try{  
+        try{
          await  axios
             .get(baseUrl + "/api/PDF/DownloadSnagPDF/?snagKey="+snagKey, formData, config)
             .then((response) => {
                this.downloadedSnagPDF = response.data;
-               
+
 
               // var fileName = 'Report '+this.format_date(DateFrom, 'YYYY-MM-DD')+" - "+this.format_date(DateTo, 'YYYY-MM-DD');
                this.downloadPDF(this.downloadedSnagPDF, snagCode + " - "+ snagTitle +".pdf");
-              
-            })           
-           
+
+            })
+
 
           } catch (error) {
-          
+
                 if(error.response.status == 401){
                   alert("Your session is expired! Please login");
                   localStorage.clear();
@@ -1171,11 +1171,11 @@ export default {
               this.displayInfoDialog=true;
               this.InfoModalHeader='Error '+error.response.status;
               this.InfoModalMessage=error.response.data.Message;
-              this.isLoading = false; 
+              this.isLoading = false;
 
-       }   
+       }
 
-          // after every request 
+          // after every request
           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -1186,18 +1186,18 @@ export default {
 
 
     selectingForInvoice(clickedID){
-     
-           
+
+
         if(!this.checkedIDs[clickedID]){
                 this.selectedIDsForInvoicing.push(clickedID);
         }else{
-          
+
           const index = this.selectedIDsForInvoicing.indexOf(clickedID);
-          this.selectedIDsForInvoicing.splice(index, 1);     
-        
+          this.selectedIDsForInvoicing.splice(index, 1);
+
         }
 
-      
+
         if( this.selectedIDsForInvoicing.length > 0){
             this.showInvoiceSelectedButton=true;
         }else{
@@ -1205,10 +1205,10 @@ export default {
             this.AllPageMarked = false;
         }
 
-      
-                 
-                  
-              
+
+
+
+
 
     },
 
@@ -1225,16 +1225,16 @@ export default {
 
        this.sendMultipleInvoiceDialog = true;
      },
-      
-   
+
+
 
     reorganizePagination(){
       $(".p-paginator-current").detach().appendTo('.p-paginator-left-content');
       $(".p-paginator-rpp-options").detach().appendTo('.p-paginator-right-content');
     },
-    
+
     moveSearchBoxToTop(){
-     
+
         //default search box is inside header of the datatable, must move to the top of the page
         $('#hereMoveSearch').empty();
         $("#searchBox").detach().appendTo('#hereMoveSearch');
@@ -1243,18 +1243,18 @@ export default {
     newSnag(){
       this.resetInputFields();
       this.newSnagDate = this.format_date(moment(),'DD/MM/YYYY');
-      
-     
+
+
       //show dialog for insert
       this.newSnagDialog = true
-      
+
     },
     editSnag(){
 
-      
+
        var AllOk = true;
 
-     
+
       if(this.editSnagDate == ''){
         this.editSnagDateOK = false;
         AllOk = false;
@@ -1270,12 +1270,12 @@ export default {
         AllOk = false;
       }else{this.editSnagCodeOK = true;}
 
-    
-      
+
+
       if(this.editSnagStatus.name){
           this.editSnagStatus = this.editSnagStatus.value;
       }
-     
+
       if(this.editSnagStatus == ''){
         this.editSnagStatusOK = false;
         AllOk = false;
@@ -1293,30 +1293,30 @@ export default {
 
     },
     async editSnagInDatabase(){
-     
-         this.panelClass = 'closedPanel';   
-         this.isLoading = true;  
-         
-        
+
+         this.panelClass = 'closedPanel';
+         this.isLoading = true;
+
+
           var SnagDate = this.format_date(moment(this.editSnagDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
 
-        
-         
+
+
           const sessionId=this.$store.getters.token;
           const baseUrl = this._rootRestUrl;
-                  
+
           let formData = JSON.stringify({key:this.ClickedRowId,sessionId:sessionId,caption:this.editSnagTitle,code:this.editSnagCode,status:this.editSnagStatus,userEmail:'',date:SnagDate});
-     
+
           let config = {
             headers: {
               "Content-Type": "application/json",
             }};
-         
+
         try {
           await axios
             .put(baseUrl + "/api/Snags/EditSnag",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.editSnagDialog=false;
@@ -1324,23 +1324,23 @@ export default {
                this.displayInfoDialog= true;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Changes are saved';
-               this.isLoading = false; 
+               this.isLoading = false;
            })
-            
-                    
+
+
             } catch (error) {
 
-           
+
                 this.editSnagDialog=false;
                 this.displayInfoDialog=true;
                 this.InfoModalHeader='Error '+error.response.status;
                 this.InfoModalMessage=error.response.data.Message;
-                this.isLoading = false; 
- 
-           }
- 
+                this.isLoading = false;
 
-          // after every request 
+           }
+
+
+          // after every request
         //  // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -1349,7 +1349,7 @@ export default {
 
 
     saveSnag(){
-      
+
        var AllOk = true;
 
       if(this.newSnagDate == ''){
@@ -1369,7 +1369,7 @@ export default {
 
 
     if(this.newSnagStatus == undefined || this.newSnagStatus==''){
-       
+
         this.newSnagStatus = '';
         AllOk = false;
         this.newSnagStatusOK = false;
@@ -1392,7 +1392,7 @@ export default {
         AllOk = false;
       }else{this.newSnagCommentsOK = true;}*/
 
-  
+
       if(AllOk == true){
           this.InsertSnagToDatabase();
       }
@@ -1400,59 +1400,59 @@ export default {
     },
 
     async  InsertSnagToDatabase(){
-      
-        this.panelClass = 'closedPanel';   
-        this.isLoading = true;  
-         
+
+        this.panelClass = 'closedPanel';
+        this.isLoading = true;
+
        // const sessionId=this.$store.getters.token;
-       
+
         //date and time from NOW()
         var SnagDate = this.format_date(moment(this.newSnagDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
-        
+
         const baseUrl = this._rootRestUrl;
-              
+
       let formData = JSON.stringify({ProjectRef:this.ProjectRef,type:'Snag',key:'',code:this.newSnagCode,caption:this.newSnagTitle,status:this.newSnagStatus,date:SnagDate});
 
         let config = {
             headers: {
               "Content-Type": "application/json",
         }};
-    
+
        try{
-          
+
       await   axios
             .post(baseUrl + "/api/Snags/InsertSnag",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.newSnagDialog=false;
                this.displayInfoDialog= true;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Snag is inserted';
-               this.isLoading = false; 
+               this.isLoading = false;
            })
-            
-            
+
+
             } catch (error) {
-           
+
               if(error.response.status == 401){
                 alert("Your session is expired! Please login");
                 localStorage.clear();
                  // document.location = '/';
               }
                 this.newSnagDialog=false;
-                
+
                 this.displayInfoDialog=true;
                 this.InfoModalHeader='Error '+error.response.status;
                 this.InfoModalMessage=error.response.data.Message;
-                this.isLoading = false; 
+                this.isLoading = false;
 
             }
 
 
 
-            // after every request 
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -1465,13 +1465,13 @@ export default {
 
 
     handleClose(shouldShow) {
-      
+
       // shouldShow will always be `false`, so this is a bit redundant
       if(!shouldShow){
        // this.resetInputFields();
       }
       else {
-        // still open 
+        // still open
       }
     },
 
@@ -1528,9 +1528,9 @@ export default {
           this.editSnagCommentsOK=true;
 
  },
-   
+
     editClick(){
-      
+
       //show dialog for insert
       this.editSnagDialog = true;
 
@@ -1550,31 +1550,31 @@ export default {
 
     deletePhotoModal(photoId){
          // show confirmation dialog
-  
+
         this.photoIdForDelete = photoId;
         this.deletePhoto();
     },
 
   async  deletePhoto(){
         //user already confirmed
-         this.panelClass = 'closedPanel';   
-         this.isLoading = true;  
-           
+         this.panelClass = 'closedPanel';
+         this.isLoading = true;
+
          const sessionId=this.$store.getters.token;
          const baseUrl =this._rootRestUrl;
-      
+
          let formData = JSON.stringify({sessionId:sessionId,key:this.photoIdForDelete});
-     
+
           let config = {
             headers: {
               "Content-Type": "application/json",
           }};
 
-        try{  
+        try{
           await  axios
             .post(baseUrl + "/api/v1/Trip/DeleteTripFile",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.displayDeletePhotoConfirm = false;
@@ -1582,13 +1582,13 @@ export default {
                this.displayInfoDialog= true;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Photo is deleted';
-               this.isLoading = false; 
+               this.isLoading = false;
            })
-            
-            
+
+
 
         } catch (error) {
-           
+
            if(error.response.status == 401){
              alert("Your session is expired! Please login");
              localStorage.clear();
@@ -1600,13 +1600,13 @@ export default {
              this.displayInfoDialog=true;
              this.InfoModalHeader='Error '+error.response.status;
              this.InfoModalMessage=error.response.data.Message;
-             this.isLoading = false; 
+             this.isLoading = false;
 
          }
 
 
-            
-            // after every request 
+
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -1614,57 +1614,57 @@ export default {
 
   async  deleteTrip(){
       //user already confirmed
-         this.panelClass = 'closedPanel';   
-         this.isLoading = true;  
-           
+         this.panelClass = 'closedPanel';
+         this.isLoading = true;
+
          const sessionId=this.$store.getters.token;
          const baseUrl = this._rootRestUrl;
-      
+
          let formData = JSON.stringify({sessionId:sessionId,key:this.ClickedRowId});
-     
+
           let config = {
             headers: {
               "Content-Type": "application/json",
           }};
 
-       try{   
+       try{
         await   axios
             .post(baseUrl + "/api/v1/Trip/DeleteTrip",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.displayDeleteConfirm = false;
                this.displayInfoDialog= true;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Trip is deleted';
-               this.isLoading = false; 
+               this.isLoading = false;
            })
-            
+
 
        } catch (error) {
-           
+
            if(error.response.status == 401){
              alert("Your session is expired! Please login");
              localStorage.clear();
               // document.location = '/';
            }
              this.displayDeleteConfirm=false;
-         
-             
+
+
              this.displayInfoDialog=true;
              this.InfoModalHeader='Error '+error.response.status;
              this.InfoModalMessage=error.response.data.Message;
-             this.isLoading = false; 
+             this.isLoading = false;
 
          }
 
 
-            // after every request 
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
-    
+
     },
 
 
@@ -1673,11 +1673,11 @@ export default {
     } ,
 
      refreshData(){
-   
+
       if(this.fromDate == null){this.fromDate=''}
       if(this.toDate == null){this.toDate=''}
         //get selected dates
-      if(this.fromDate.length>0){  
+      if(this.fromDate.length>0){
         if (this.fromDate.length!=10){
             this.fromDate = this.format_date(this.fromDate,'DD/MM/YYYY');
         }
@@ -1686,28 +1686,28 @@ export default {
             this.toDate = this.format_date(this.toDate,'DD/MM/YYYY');
         }
       }
-     
+
       // and go for trips
       this.getSnags();
       this.getCompanies();
     },
     onSwiper(){},
-   
-          
+
+
     format_date_to_full(aDate,aTime){
-   
+
         //excpected input: 14/04/2023
        var year = aDate.substring(6, 10);
        var month = aDate.substring(3, 5);
        var day = aDate.substring(0, 2);
 
         return year + '-' + month + '-' +day + " "+aTime;
-      
+
 
     },
 
     format_date_to_full_time(aDate){
-   
+
    //excpected input: 14/04/2023 14:33
   var year = aDate.substring(6, 10);
   var month = aDate.substring(3, 5);
@@ -1717,12 +1717,12 @@ export default {
   var sec = '00';
 
    return year + '-' + month + '-' +day + ' '+hour+':'+min+':'+sec;
- 
+
 
 },
 
     format_date_to_dateTime(aDate){
-   
+
     //expected input: 2023-10-24 14:30:43
     var year = aDate.substring(0, 4);
     var month = aDate.substring(5, 7);
@@ -1740,7 +1740,7 @@ export default {
 /*
           const sessionId=this.$store.getters.token;
           const baseUrl = this._rootRestUrl;
-          
+
           let formData = JSON.stringify({ sessionId: sessionId });
           let config = {
             headers: {
@@ -1753,7 +1753,7 @@ export default {
             .get(baseUrl + "/api/v1/Company/GetCompanies/?sessionId="+sessionId+"", formData, config)
             .then((response) => {
                this.allStatuses = response.data;
-               
+
                //sorting function:
                 const sortArrayOfObjects = (arr, propertyName, order = 'ascending') => {
                       const sortedArr = arr.sort((a, b) => {
@@ -1774,13 +1774,13 @@ export default {
                     };
                //-- end of sorting function
 
-               
-               
+
+
                this.allStatuses = sortArrayOfObjects( this.allStatuses, "name");
-            
+
              // console.table(this.allStatuses)
-                        
-            })           
+
+            })
              .catch(function (error) {
                 // handle error
                 if(error.response.status=='401') { //not authorized, token expires
@@ -1789,12 +1789,12 @@ export default {
               }
                 console.table(error);
              });
-            
-           // after every request 
+
+           // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
-    
+
             */
 
 
@@ -1805,34 +1805,34 @@ export default {
     },
 
     async getSnags(all){
-     
+
  //get selected dates
 
-       
+
 
 
           //save dates to local storage so it remebeer when swithing tabs:
           localStorage.setItem('fromDate',this.fromDate);
           localStorage.setItem('toDate',this.toDate);
 
-          this.panelClass = 'closedPanel';   
-          this.isLoading = true;  
-         
+          this.panelClass = 'closedPanel';
+          this.isLoading = true;
+
        /*   const fromDateFull = this.format_date_to_full(this.fromDate, '00:00:00');
             const toDateFull = this.format_date_to_full(this.toDate,'23:59:59');
           */
 
-        /*  
+        /*
           const sessionId=this.$store.getters.token;
           const DateFrom=fromDateFull;
           const DateTo= toDateFull;
           const UserId= localStorage.getItem("userId");
           const UserType= this.userType;
          */
-        
+
           const baseUrl = this._rootRestUrl;
-          
-       
+
+
           let config = {
             headers: {
               "Content-Type": "application/json",
@@ -1842,14 +1842,14 @@ export default {
 
 
           /*  captionFilter:'',
-              codeFilter:'', 
+              codeFilter:'',
           */
-          var addOnFilter = [] 
+          var addOnFilter = []
           var isthisLike = false;
 
-          
+
           if(this.captionFilter != '' && this.captionFilter != null){
-         
+
               if(this.captionFilterMode=='contains'){
                 isthisLike = true;
               }else{
@@ -1879,7 +1879,7 @@ export default {
             }
 
             if(this.worksPackageFilter != '' & this.worksPackageFilter != null){
-           
+
               if(this.worksPackageFilterMode=='contains'){
                 isthisLike = true;
               }else{
@@ -1908,7 +1908,7 @@ export default {
             addOnFilter.push({name:'closedBy', value:this.closedByFilter,isLike:isthisLike,isDate:false});
             }
 
-            
+
            if(this.actionByFilter != '' & this.actionByFilter != null){
             if(this.actionByFilterMode=='contains'){
                 isthisLike = true;
@@ -1918,7 +1918,7 @@ export default {
             addOnFilter.push({name:'assignedTo', value:this.actionByFilter,isLike:isthisLike,isDate:false});
             }
 
-        
+
             if(this.createdByFilter != '' & this.createdByFilter != null){
               if(this.createdByFilterMode=='contains'){
                 isthisLike = true;
@@ -1926,7 +1926,7 @@ export default {
                 isthisLike = false;
               }
            addOnFilter.push({name:'createdBy', value:this.createdByFilter,isLike:isthisLike,isDate:false});
-           
+
          }
 
 
@@ -1942,10 +1942,10 @@ export default {
     //  from =moment(from).format('x')*1+621355968000000000;
    //   to =moment(to).format('x')*1+621355968000000000;
 
-      
- 
+
+
    if (this.fromDate != undefined && this.toDate != undefined && this.fromDate != null && this.toDate != null && this.fromDate != '' && this.toDate != '' ) {
- 
+
             var from =  this.fromDate;
             var to = this.toDate;
 
@@ -1953,12 +1953,12 @@ export default {
             to =  ((moment(to).format('x'))*10000)+621355968000000000 ;
 
             addOnFilter.push({name:'created', value:from+','+to,isLike:isthisLike,isDate:true});
-     
+
     }
 
 
-         
-         //    addOnFilter += ']';  
+
+         //    addOnFilter += ']';
 
             if(this.searchQuery!=''){
               addOnFilter += '&searchQuery='+this.searchQuery;
@@ -1967,8 +1967,8 @@ export default {
       /*     this.createdByFilter = event.filters.createdBy.matchMode;
           this.actionByFilter = event.filters.assignedTo.matchMode;
           this.closedByFilter = event.filters.closedBy.matchMode;*/
-          
-           
+
+
             var pageA='';
               if(all=='all'){
                 pageA=0;
@@ -1976,27 +1976,27 @@ export default {
                // this.pageSize=100;
               }else{
                  pageA=+this.snagsPage;
-                
+
               //    this.pageSize=100;
               }
-        
 
-              let formData = { pageSize:this.pageSize,pageNumber:pageA,searchQuery:this.searchQuery,filters:addOnFilter}; 
 
-        
+              let formData = { pageSize:this.pageSize,pageNumber:pageA,searchQuery:this.searchQuery,filters:addOnFilter};
+
+
               formData=JSON.stringify(formData);
-   
+
               try{
 
            await axios
             .post(baseUrl + "/api/Snags/GetAllSnags/" , formData, config)
             .then((response) => {
-              
-                        
-         
+
+
+
               this.allSnags = response.data.snags;
               this.totalRecords = response.data.totalRecords;
-           
+
 
 
               if(this.totalRecords == 0){
@@ -2004,35 +2004,35 @@ export default {
               }else{
                 this.showTable = true;
               }
-             
-              this.isLoading = false;  
+
+              this.isLoading = false;
               this.reorganizePagination();
-              
+
               // if we don't have loookups for statuses then get it :)
               if(this.allStatuses.length==0){
                 this.getStatuses();
               }
            })
-           
+
            $('#sidebar').click();
 
           } catch (error) {
-           
+
            if(error.response.status == 401){
              alert("Your session is expired! Please login");
              localStorage.clear();
               // document.location = '/';
            }
-             
+
              this.displayInfoDialog=true;
              this.InfoModalHeader='Error '+error.response.status;
              this.InfoModalMessage=error.response.data.Message;
-             this.isLoading = false; 
+             this.isLoading = false;
 
          }
 
-            
-            // after every request 
+
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -2041,7 +2041,7 @@ export default {
 
     async  getStatuses(){
          const baseUrl = this._rootRestUrl;
-          
+
           let formData = JSON.stringify({ category: 'SNSTAT' });
           let config = {
             headers: {
@@ -2054,9 +2054,9 @@ export default {
            await axios
             .get(baseUrl + "/api/LookUps/GetStatusLookUps?category="+'SNSTAT'  , formData, config)
             .then((response) => {
-             
+
               this.allStatuses = response.data;
-            
+
 
                 var jsonString = JSON.stringify(response.data)
                 jsonString = jsonString.replaceAll('"shortCode"', '"value"');
@@ -2064,100 +2064,100 @@ export default {
 
                 this.allStatuses =  $.parseJSON(jsonString)
 
-                   ;    
+                   ;
            })
-            
+
           } catch (error) {
-           
+
            if(error.response.status == 401){
              alert("Your session is expired! Please login");
              localStorage.clear();
               // document.location = '/';
            }
-             
+
              this.displayInfoDialog=true;
              this.InfoModalHeader='Error '+error.response.status;
              this.InfoModalMessage=error.response.data.Message;
-             this.isLoading = false; 
+             this.isLoading = false;
 
          }
 
-            
-            // after every request 
+
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
 
-          
-        
+
+
       },
 
 
-     
+
 
       onRowClick(event) {
-      
-       
-                
+
+
+
           this.ClickedRowId = event.data.key; // key for update
           this.editSnagDate = this.format_date(event.data.date,'DD/MM/YYYY');
           this.editSnagTitle = event.data.caption;
           this.editSnagStatus = event.data.status;
           this.editSnagCode = event.data.code;
-         
+
 
 
       // alert( event.data.id);
-      
-        
-        
+
+
+
           $('.hiddenFields').each(function() {
-            
+
             $(this).closest('tr').removeClass('highlight');
            });
-          
+
           $('.hiddenFields').each(function() {
-           
+
             if($(this).attr('data')==event.data.key){
               $(this).closest('tr').addClass('highlight');
              }
-          
+
           });
 
       },
-   
+
       onRowSelect(event) {
-      
+
 
         if(event.originalEvent.target.tagName != 'I' && event.originalEvent.target.tagName !='SPAN'){
           //if not clicked on I element (icon ) then open panel
-         
-        
+
+
           $('.hiddenFields').each(function() {
-            
+
             $(this).closest('tr').removeClass('highlight');
            });
-          
+
           $('.hiddenFields').each(function() {
-           
+
             if($(this).attr('data')==event.data.key){
               $(this).closest('tr').addClass('highlight');
              }
-          
+
           });
 
-         
-     
 
-        //open panel      
+
+
+        //open panel
         this.getDocumentDetails();
 
-               
+
         if(this.snagImages.length > 0){
-            this.picturesTabShow= false;  
-            this.activeTab=0;  
+            this.picturesTabShow= false;
+            this.activeTab=0;
          } else{
-           this.picturesTabShow= true;    
+           this.picturesTabShow= true;
         }
 
 
@@ -2170,22 +2170,22 @@ export default {
       customUploader(event){
           var timestamp = Date.now();
           var selectedFile = event.files[0]  ; // for now only one file
-        //  this.convertToBinary(selectedFile, selectedFile.name);   
-         this.uploadImage(selectedFile,timestamp+'_'+selectedFile.name);  
-          
+        //  this.convertToBinary(selectedFile, selectedFile.name);
+         this.uploadImage(selectedFile,timestamp+'_'+selectedFile.name);
+
       },
 
   /*     async convertToBinary(file, filename) {
-         
+
             const reader = new FileReader();
             reader.readAsBinaryString(file);
             await new Promise(resolve => reader.onload = () => resolve());
-            
+
             var binary = reader.result
-           
+
             this.uploadImage(binary,filename);
-          
-            
+
+
        },*/
 
 
@@ -2193,12 +2193,12 @@ export default {
           //FINNALY !! it works :)
            //  alert(binary )
           //   alert(filename);
-            this.isLoading = true; 
-             
+            this.isLoading = true;
+
             const sessionId=this.$store.getters.token;
             const baseUrl =this._rootRestUrl;
             const tripId =this.ClickedRowId;
-          
+
 
 
 
@@ -2210,7 +2210,7 @@ export default {
 
             };
 
-                     
+
             var formData = new FormData();
             formData.append("Key", "");
             formData.append("Caption", filename);
@@ -2220,38 +2220,38 @@ export default {
             formData.append("File", binary);
 
 
-              
-     
-      try {  
+
+
+      try {
        await axios
             .post(baseUrl + "/api/Attachments/InsertPhoto", formData, config)
             .then(() => {
-              
-             
+
+
               this.displayInfoDialog= true;
               this.InfoModalHeader='Info';
               this.InfoModalMessage='Photo is added';
-              this.isLoading = false; 
+              this.isLoading = false;
               this.displayUploadModal = false;
               // console.table(response);
               this.getSnags();
-         
-           })   ;        
-      
+
+           })   ;
+
           } catch (error) {
          // alert(error)
 
                   this.displayInfoDialog= true;
                     this.InfoModalHeader='Alert!';
                     this.InfoModalMessage='Error occured while uploading photo. Photo is not added!';
-                    this.isLoading = false; 
+                    this.isLoading = false;
                     this.displayUploadModal = false;
                     this.getSnags();
 
-          }    
+          }
 
-             
-           // after every request 
+
+           // after every request
            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -2281,7 +2281,7 @@ export default {
 
        invoiceMultipleTrips(){
 
-       
+
 
         var AllOk = true;
 
@@ -2299,81 +2299,81 @@ export default {
 
 
     async  markAsInvoicedInDatabase(){
-         // this.panelClass = 'closedPanel';   
-          this.isLoading = true;  
-         
+         // this.panelClass = 'closedPanel';
+          this.isLoading = true;
+
           var Date = this.format_date(moment(this.invoiceDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
 
           const sessionId=this.$store.getters.token;
           const baseUrl = this._rootRestUrl;
-                  
+
           let formData = JSON.stringify({tripKey:this.ClickedRowId,sessionId:sessionId,date:Date,isInvoiceSent:true});
-       
+
           let config = {
             headers: {
               "Content-Type": "application/json",
             }};
-         
+
         try{
          await  axios
             .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.displayInfoDialog= true;
                this.sendInvoiceDialog=false;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Trip is marked as invoiced';
-               this.isLoading = false; 
+               this.isLoading = false;
 
                this.checkedIDs = [];
                this.AllPageMarked = false;
            })
-            
-             
+
+
           } catch (error) {
-          
+
               if(error.response.status == 401){
                 alert("Your session is expired! Please login");
                 localStorage.clear();
                   // document.location = '/';
               }
-                this.sendInvoiceDialog=false;  
+                this.sendInvoiceDialog=false;
 
                 this.displayInfoDialog=true;
                 this.InfoModalHeader='Error '+error.response.status;
                 this.InfoModalMessage=error.response.data.Message;
-                this.isLoading = false; 
+                this.isLoading = false;
 
           }
 
 
 
-            // after every request 
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
-        
+
        },
 
 
     async   markAsInvoicedMultipleInDatabase(){
 
-         // this.panelClass = 'closedPanel';   
-         this.isLoading = true;  
-         
+         // this.panelClass = 'closedPanel';
+         this.isLoading = true;
+
          var Date = this.format_date(moment(this.invoiceDate,'DD/MM/YYYY HH:mm'),'YYYY-MM-DD HH:mm:ss');
 
          const sessionId=this.$store.getters.token;
          const baseUrl = this._rootRestUrl;
-                 
-        
-   
-              
+
+
+
+
           var jsonString='{"sessionId": "'+sessionId+'",';
              jsonString+='     "invoices": [ ';
-               
+
              var a=0;
              var collectIDsToRemoveChecked = [];
              this.selectedIDsForInvoicing.forEach((aID) => {
@@ -2388,13 +2388,13 @@ export default {
                 jsonString+=',';
               }
 
-            });    
-              
+            });
+
 
              jsonString+='  ]';
            jsonString+='  }';
 
-       
+
 
         let formData = jsonString;
 
@@ -2403,12 +2403,12 @@ export default {
            headers: {
              "Content-Type": "application/json",
            }};
-        
+
       try{
           await  axios
            .post(baseUrl + "/api/v1/Trip/MarkInvoicesAsSent",formData, config )
            .then(() => {
-                               
+
                 this.getSnags();
                 this.getCompanies();
                 this.displayInfoDialog= true;
@@ -2416,25 +2416,25 @@ export default {
                 this.showInvoiceSelectedButton=false;
                 this.InfoModalHeader='Info';
                 this.InfoModalMessage='Trips are marked as invoiced';
-                this.isLoading = false; 
+                this.isLoading = false;
 
                 //remove checkbox
-                collectIDsToRemoveChecked.forEach((aID) => { 
+                collectIDsToRemoveChecked.forEach((aID) => {
                 this.checkedIDs[aID]=false;
-            
+
                 //remove ID from array
                 const index = this.selectedIDsForInvoicing.indexOf(aID);
-                this.selectedIDsForInvoicing.splice(index, 1);     
-                
+                this.selectedIDsForInvoicing.splice(index, 1);
+
                 });
 
 
             })
-           
-        
-             
+
+
+
             } catch (error) {
-          
+
           if(error.response.status == 401){
             alert("Your session is expired! Please login");
             localStorage.clear();
@@ -2445,7 +2445,7 @@ export default {
             this.displayInfoDialog=true;
             this.InfoModalHeader='Error '+error.response.status;
             this.InfoModalMessage=error.response.data.Message;
-            this.isLoading = false; 
+            this.isLoading = false;
 
       }
 
@@ -2454,7 +2454,7 @@ export default {
             this.AllPageMarked=false;
             this.AllMarked=false;
 
-          // after every request 
+          // after every request
           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -2463,25 +2463,25 @@ export default {
 
 
       async unInvoiceThisTrip(){
-          
-        //this.panelClass = 'closedPanel';   
-          this.isLoading = true;  
-                          
+
+        //this.panelClass = 'closedPanel';
+          this.isLoading = true;
+
           const sessionId=this.$store.getters.token;
           const baseUrl = this._rootRestUrl;
-                  
+
           let formData = JSON.stringify({tripKey:this.ClickedRowId,sessionId:sessionId,date:'',isInvoiceSent:false});
-       
+
           let config = {
             headers: {
               "Content-Type": "application/json",
             }};
-         
+
       try{
           await axios
             .post(baseUrl + "/api/v1/Trip/MarkInvoiceAsSent",formData, config )
             .then(() => {
-                                
+
                this.getSnags();
                this.getCompanies();
                this.editSnagDialog=false;
@@ -2489,12 +2489,12 @@ export default {
                this.displayUnInvoiceConfirm=false;
                this.InfoModalHeader='Info';
                this.InfoModalMessage='Trip is marked as invoiced';
-               this.isLoading = false; 
+               this.isLoading = false;
            })
-            
-            
+
+
             } catch (error) {
-          
+
               if(error.response.status == 401){
                 alert("Your session is expired! Please login");
                 localStorage.clear();
@@ -2505,25 +2505,25 @@ export default {
             this.displayInfoDialog=true;
             this.InfoModalHeader='Error '+error.response.status;
             this.InfoModalMessage=error.response.data.Message;
-            this.isLoading = false; 
+            this.isLoading = false;
 
            }
 
 
-           // after every request 
+           // after every request
            // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
 
        },
-        
-          
+
+
       async getDocumentDetails(){
-         
-      
-        
+
+
+
         const baseUrl = this._rootRestUrl;
-          
+
           let formData = JSON.stringify({ key: this.ClickedRowId });
           let config = {
             headers: {
@@ -2534,70 +2534,70 @@ export default {
 
             this.isLoading = true;
 
-         try{   
+         try{
            await axios
             .get(baseUrl + "/api/Snags/GetSnagDetails/?snagKey="+this.ClickedRowId , formData, config)
             .then((response) => {
-             
+
               this.snagDetails = response.data;
-              this.isLoading = false;  
+              this.isLoading = false;
               this.fillPanelData();
-             
+
            })
-            
+
           } catch (error) {
-                
+
               if(error.response.status == 401){
                 alert("Your session is expired! Please login");
                 localStorage.clear();
                   // document.location = '/';
               }
-             
+
 
               this.displayInfoDialog=true;
               this.InfoModalHeader='Error '+error.response.status;
               this.InfoModalMessage=error.response.data.Message;
-              this.isLoading = false; 
+              this.isLoading = false;
 
-            }  
+            }
 
-            
-            // after every request 
+
+            // after every request
             // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
 
             this.isLoading = false;
 
-       
 
-       
-         
+
+
+
        },
 
        fillPanelData(){
 
         this.snagDetailsData  = this.snagDetails['snag'];
-       
+
         //picturesTabShow
-       
+
         var snagPictures = this.snagDetails['snagAttachments'];
 
-   
+
         if (snagPictures.length >0){
         this.snagNotes =  this.snagDetailsData['notes'];
-     
+
 
          this.snagImages = snagPictures;
-          
+
           this.picturesTabShow = true;
         }else{
           this.picturesTabShow = false;
           this.snagImages = [];
         }
 
-         
-       
+
+
         this.openPanel();
 
 
@@ -2613,19 +2613,19 @@ export default {
         this.panelClass = 'closedPanel';
       },
 
-    
+
       initFilters1() {
             this.filters1 = {
                'global': {value: null, matchMode: FilterMatchMode.CONTAINS},
-               'userFullName':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'from': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'to': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'companyName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
-               'cargoName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}, 
+               'userFullName':{operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'from': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'to': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'companyName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
+               'cargoName': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'distance': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'sumVAT': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]},
                'comments': {operator: FilterOperator.AND, constraints: [{value: null, matchMode: FilterMatchMode.CONTAINS}]}
-               
+
             }
         },
 
@@ -2649,13 +2649,13 @@ export default {
     },
     showloader(event){
         this.isLoading = event;
-       
+
     },
    async downloadReport(){
-     
+
          this.getSnags();
-         this.isLoading = true;  
-         
+         this.isLoading = true;
+
 
         //get selected dates
         if (this.fromDate.length!=10){
@@ -2672,14 +2672,14 @@ export default {
          const sessionId=this.$store.getters.token;
          const DateFrom=fromDateFull;
          const DateTo= toDateFull;
-  
+
          const baseUrl = this._rootRestUrl;
-        
-        
+
+
         // const locale = this.userLocale;
            const locale = 'EN'; //for now, locale set to EN so that CSV is comma separated
-     
-      
+
+
 
         let formData = JSON.stringify({ sessionId: sessionId, DateFrom:DateFrom , DateTo:DateTo , locale:locale});
           let config = {
@@ -2689,21 +2689,21 @@ export default {
 
           };
 
-        try{  
+        try{
          await  axios
             .get(baseUrl + "/api/v1/Trip/CSV/Trips/?sessionId="+sessionId+"&DateFrom="+DateFrom+"&DateTo="+DateTo+"&locale="+locale, formData, config)
             .then((response) => {
                this.downloadedReport = response.data;
-               
+
 
                var fileName = 'Report '+this.format_date(DateFrom, 'YYYY-MM-DD')+" - "+this.format_date(DateTo, 'YYYY-MM-DD');
                this.downloadCSV(this.downloadedReport, fileName);
-              
-            })           
-           
+
+            })
+
 
           } catch (error) {
-          
+
                 if(error.response.status == 401){
                   alert("Your session is expired! Please login");
                   localStorage.clear();
@@ -2714,11 +2714,11 @@ export default {
               this.displayInfoDialog=true;
               this.InfoModalHeader='Error '+error.response.status;
               this.InfoModalMessage=error.response.data.Message;
-              this.isLoading = false; 
+              this.isLoading = false;
 
-       }   
+       }
 
-          // after every request 
+          // after every request
           // this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.extendTime(); // extend timeout to show expire session dialog
             // ---------------------
@@ -2726,7 +2726,7 @@ export default {
 
     },
 
-    
+
 
     correctData(){
 
@@ -2739,7 +2739,7 @@ export default {
         entries.forEach((value2) => {
 
           value2.checked = false;
-              
+
               if(value2[0]=='invSent'){
                   var newType = '';
                   if(value2[1]==true){
@@ -2749,12 +2749,12 @@ export default {
                   }
                   this.allSnags[index]['invSent']=newType;
               }
-            
-          
 
 
 
-              
+
+
+
         });
 
 
@@ -2763,7 +2763,7 @@ export default {
      },
 
     downloadCSV(csvString,filename){
-          
+
           const element = document.createElement("a");
 
           element.setAttribute("href", `data:text/csv;charset=utf-8,${csvString}`);
@@ -2773,13 +2773,13 @@ export default {
           document.body.appendChild(element);
           element.click();
           document.body.removeChild(element);
-          this.isLoading = false; 
+          this.isLoading = false;
     },
 
     downloadPDF(){
-      
-        $('#downloadPDFlink').remove(); 
-          
+
+        $('#downloadPDFlink').remove();
+
         /*	const element = document.createElement("a");
 
           element.setAttribute("href", `data:application/pdf;base64,${base64PDF}`);
@@ -2798,7 +2798,7 @@ export default {
           $('#downloadPDFlink').click();*/
 
 
-          
+
 
     },
 
@@ -2818,22 +2818,25 @@ export default {
 
 
     showContextMenu: function (e) {
-       
+
           //show right click menu only for admin
           if(this.userType.toUpperCase()=='ADMIN'){
-            
+
               e.preventDefault();
               var menu = document.getElementById("div-context-menu");
-              menu.style.left = e.pageX + 'px'
-              menu.style.top = (e.pageY - 50) + 'px'
-              menu.style.display = 'block'
-              menu.cid = e.target.id.replace(/title-/,"")
-            
-          }  
+              if (menu) {
+                menu.style.left = e.pageX + 'px'
+                menu.style.top = (e.pageY - 50) + 'px'
+                menu.style.display = 'block'
+                menu.cid = e.target.id.replace(/title-/,"")
+              }
+
+          }
 
         }
         , hideContextMenu: function () {
-           document.getElementById("div-context-menu").style.display = "none"
+           const menu = document.getElementById("div-context-menu");
+           if (menu) menu.style.display = "none";
         },
 
         onClick: function () {
@@ -2841,16 +2844,16 @@ export default {
         },
 
         onPage(event){
-        
+
           this.pageSize = event.rows;
           this.snagsPage = ((event['originalEvent']['page'])*1) + 1;
           this.getSnags();
-        
-        
+
+
         },
 
         onSearchInput(){
-        
+
           if(this.searchQuery.length==0){
             this.first=0;
             this.snagsPage = 1;
@@ -2866,10 +2869,10 @@ export default {
             this.getSnags();
           }
         },
-        
+
         onFilter(event){
- 
-                      
+
+
           this.captionFilter = event.filters.caption.constraints[0].value;
           this.codeFilter = event.filters.code.constraints[0].value;
           this.statusFilter = event.filters.status.constraints[0].value;
@@ -2879,8 +2882,8 @@ export default {
           this.actionByFilter = event.filters.assignedTo.constraints[0].value;
           this.closedByFilter = event.filters.closedBy.constraints[0].value;
 
-                      
-                         
+
+
                   if (this.filters.caption.value === null){
                        this.filters.caption.constraints[0].value=null;
                        this.filters.caption.value=null;
@@ -2920,10 +2923,10 @@ export default {
                       this.filters.closedBy.constraints[0].value=null;
                       this.filters.closedBy.value=null;
                   }
-      
-            
 
-      
+
+
+
           //"how" we filter
           this.captionFilterMode = event.filters.caption.constraints[0].matchMode;
           this.codeFilterMode = event.filters.code.constraints[0].matchMode;
@@ -2933,7 +2936,7 @@ export default {
           this.createdByFilterMode = event.filters.createdBy.constraints[0].matchMode;
           this.actionByFilterMode = event.filters.assignedTo.constraints[0].matchMode;
           this.closedByFilterMode = event.filters.closedBy.constraints[0].matchMode;
-          
+
           //if something filtered then filter icon should be yellow
           if(this.captionFilter != null){$('.captionColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.captionColumn .pi-filter-icon').removeClass('yellowIcon')}
           if(this.codeFilter != null){$('.codeColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.codeColumn .pi-filter-icon').removeClass('yellowIcon')}
@@ -2943,26 +2946,26 @@ export default {
           if(this.createdByFilter != null){$('.openedColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.openedColumn .pi-filter-icon').removeClass('yellowIcon')}
           if(this.actionByFilter != null){$('.assignedToColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.assignedToColumn .pi-filter-icon').removeClass('yellowIcon')}
           if(this.closedByFilter != null){$('.closedByColumn .pi-filter-icon').addClass('yellowIcon')}else{$('.closedByColumn .pi-filter-icon').removeClass('yellowIcon')}
-        
-    
-         
+
+
+
           this.getSnags();
-                  
-          
-        
+
+
+
         },
 
 
        async SelectAllPage(){
           var whatToDo = '';
-         
+
          /// collect all ID of all checkboxes:
                 var collectIDsToAdd = [];
                 this.selectedIDsForInvoicing = [];
                 $('.p-checkbox').each(function() {
                   var id=$(this).parent().attr('data');
                    collectIDsToAdd.push(id);
-                   
+
                  });
             //--------------
 
@@ -2975,8 +2978,8 @@ export default {
           }
 
 
-           if(whatToDo=='mark'){ 
-                collectIDsToAdd.forEach((aID) => { 
+           if(whatToDo=='mark'){
+                collectIDsToAdd.forEach((aID) => {
                 this.selectedIDsForInvoicing.push(aID);
                 this.checkedIDs[aID]=true;
                 this.AllPageMarked = true;
@@ -2986,17 +2989,17 @@ export default {
              this.AllPageMarked = false;
            }
 
-          
+
 
         },
 
         SelectAll(whatToDo){
-       
-                  
+
+
           if(whatToDo=='select'){
             if(this.AllMarked == false){
                this.showInvoiceSelectedButton=true;
-             
+
             }else{
                  this.showInvoiceSelectedButton=false;
            }
@@ -3009,12 +3012,12 @@ export default {
               this.showInvoiceSelectedButton=false;
             }
 
-            
-            this.selectedIDsForInvoicing = [];
-             
-            
 
-              if(whatToDo=='select'){ 
+            this.selectedIDsForInvoicing = [];
+
+
+
+              if(whatToDo=='select'){
                   this.AllMarked = true;
                   this.allSnags.forEach((value) => {
 
@@ -3022,23 +3025,23 @@ export default {
 
                     var  rememberID= '';
                     entries.forEach((value2) => {
-                        
+
                         if(value2[0]=='id'){
                           rememberID = value2[1];
                         }
-                      
+
                         if(value2[0]=='invSent'){
                             // var newType = '';
-                           
+
                             if(value2[1]=='No'){
                                 //
                                   this.selectedIDsForInvoicing.push(rememberID);
                                   this.checkedIDs[rememberID]=true;
                               }
-                            
+
                           }
-                        
-                          
+
+
                       });
 
 
@@ -3049,13 +3052,13 @@ export default {
               if(this.selectedIDsForInvoicing.lenght>0){
                 this.showInvoiceSelectedButton=true;
               }
-                        
+
         },
 
   },
-  
+
   mounted() {
-   
+
     //on load I must clear all filters !!
    /* this.filters.caption.value = null;
     this.filters.code.value = null;
@@ -3069,8 +3072,8 @@ export default {
 
 
 
-  
-    //on click anywhere close context menu 
+
+    //on click anywhere close context menu
     var el=document.getElementById('app');
     el.addEventListener('click', this.onClick);
 
@@ -3083,15 +3086,15 @@ export default {
         }else{
             this.fromDate = moment().startOf('isoWeek').format('DD/MM/YYYY');
         }
-      
+
         if(localStorage.getItem('toDate')!=undefined){
             this.toDate = localStorage.getItem('toDate');
         }else{
             this.toDate  = moment().endOf('isoWeek').format('DD/MM/YYYY');
         }*/
-    
-     //  ------ end default dates  -------- / 
-       
+
+     //  ------ end default dates  -------- /
+
 
 
      this.$emit("showSearchbar", true);
@@ -3101,7 +3104,7 @@ export default {
         localStorage.clear();
         // document.location = '/';
     }*/
-    
+
      this.getSnags();
      this.getCompanies();
      this.moveSearchBoxToTop();
@@ -3120,20 +3123,20 @@ export default {
       }*/
 
 
-     
+
      $("#editIconsPanel").detach().appendTo('.p-tabview-nav-content');
-     
+
   },
 
    created() {
-    
+
     this.aSystemDoc = localStorage.getItem("docType");
     this.initFilters1();
     this.loading1 = false;
-   
+
     },
 
-  
+
 
 
 
@@ -3241,9 +3244,9 @@ export default {
         .p-button{background:rgb(142, 53, 46)  !important;border-color: rgb(142, 53, 46)  !important;}
         .p-button:hover{background:#263a4f !important;border-color: #263a4f !important;}
         .p-button.p-button-outlined{color:white;}
-        .p-button.p-button-outlined:enabled:hover{color:white;background:#263a4f !important;border-color: #263a4f !important;}        
-       
- 
+        .p-button.p-button-outlined:enabled:hover{color:white;background:#263a4f !important;border-color: #263a4f !important;}
+
+
 #searchBox{width:80%}
 #searchBox .p-inputtext{width:100%}
 
@@ -3297,16 +3300,16 @@ th.actionsColumns{display:flex !important}
 
 
 .RightSidepanel {
-height:100%; 
+height:100%;
 width:0;
 max-width:100%;
-position: fixed; 
-z-index: 1; 
+position: fixed;
+z-index: 1;
 top: 0;
 right: 0px;
-background-color: #f5f5f5; 
-overflow-x: hidden; 
-padding-top: 15px; 
+background-color: #f5f5f5;
+overflow-x: hidden;
+padding-top: 15px;
 padding-right:0px;
 padding-left:0px;
 transition: 0.5s;
@@ -3358,7 +3361,7 @@ text-decoration:none;
 
 .p-datatable .p-datatable-tbody > tr:focus {
   outline: none;
- 
+
 }
 
 #editIconsPanel{
@@ -3408,7 +3411,7 @@ text-decoration:none;
   display: inline-block;
   margin-right: 140px;
   position: relative;
-  
+
 }
 .invoiceButton{
   padding: 3px;
@@ -3501,11 +3504,11 @@ text-decoration:none;
         }
        .actionButtonsHolderTable div {
         align-self: center;
-          
 
-          
+
+
         }
-      
+
     /*    .p-datatable thead tr th.p-filter-column{background:#FFF !important}*/
 
 
@@ -3583,7 +3586,7 @@ text-decoration:none;
   z-index: 9;
   background:red !important;
   border:red;
- 
+
 }
 
 </style>
