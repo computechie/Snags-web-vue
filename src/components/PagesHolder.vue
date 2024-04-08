@@ -1,21 +1,31 @@
 <template>
-
-<base-dialog :show="!!error" title="Error"></base-dialog>
+  <base-dialog :show="!!error" title="Error"></base-dialog>
   <base-dialog :show="isLoading" title="Authenticating..." fixed>
     <base-spinner></base-spinner>
   </base-dialog>
 
-
-  <base-dialog  :show="showCountDownDialog" fixed  >
-    <div id="timerDialog"  class="text-center">
-        <h5>Your session will expire soon!</h5>
-        <vue3-flip-countdown :showDays="false" :showHours="false"  mainColor="#e2e2e2" secondFlipColor="#ffffff" mainFlipBackgroundColor="#147d95" secondFlipBackgroundColor='#730e27'  :deadline="deadline" @timeElapsed="sessionExpired()"/>
-        <button class="btn btn-primary" id="extendSessionButton" @click="closeTimeDialog">Keep alive</button>
+  <base-dialog :show="showCountDownDialog" fixed>
+    <div id="timerDialog" class="text-center">
+      <h5>Your session will expire soon!</h5>
+      <vue3-flip-countdown
+        :showDays="false"
+        :showHours="false"
+        mainColor="#e2e2e2"
+        secondFlipColor="#ffffff"
+        mainFlipBackgroundColor="#147d95"
+        secondFlipBackgroundColor="#730e27"
+        :deadline="deadline"
+        @timeElapsed="sessionExpired()"
+      />
+      <button
+        class="btn btn-primary"
+        id="extendSessionButton"
+        @click="closeTimeDialog"
+      >
+        Keep alive
+      </button>
     </div>
   </base-dialog>
-
-
-
 
   <top-bar
     @emitSearch="emitedSearch"
@@ -36,7 +46,11 @@
         minWidth: `${dividerPosition}px`,
       }"
     >
-      <div class="sidebarTopMenu" v-if="showLeftMenu" v-bind:class="{ textcenter: isCentered }">
+      <div
+        class="sidebarTopMenu"
+        v-if="showLeftMenu"
+        v-bind:class="{ textcenter: isCentered }"
+      >
         <menu-link
           atitle="Snags"
           link="/pages/snags"
@@ -53,9 +67,8 @@
           :isActive="isActive"
         ></menu-link>
 
-
         <menu-link
-          v-if="userType=='ADMIN'"
+          v-if="userType == 'ADMIN'"
           atitle="Manage users"
           link="/pages/manageUsers"
           icon="fa-solid fa-users"
@@ -63,15 +76,12 @@
           :isActive="isActive"
         ></menu-link>
 
+        <sidebar-cde :isActive="isActive" v-if="isCDE"></sidebar-cde>
 
-        <sidebar-cde :isActive="isActive" v-if="isCDE" ></sidebar-cde>
-
-  -    <img :src="_rootLoginLogo" class="sideBarAppLogo"     />
-
-
+        - <img :src="_rootLoginLogo" class="sideBarAppLogo" />
       </div>
 
-     <!--<div class="sidebarBottomMenu" v-bind:class="{ textcenter: isCentered }">
+      <!--<div class="sidebarBottomMenu" v-bind:class="{ textcenter: isCentered }">
         <menu-linkdirect
           atitle="Support"
           :link="_rootlinkToHelpFile"
@@ -79,8 +89,6 @@
           :isActive="isActive"
         ></menu-linkdirect>
       </div>-->
-
-
     </div>
 
     <div
@@ -95,33 +103,21 @@
       id="content"
       class="content"
       :style="{
-
         paddingLeft: `${dividerPosition}px`,
         width: `${contentWidth}px`,
       }"
     >
       <section>
-        <div class="container-fluid allContent"  :style="{ padding: `${this.padding0}` }">
-
-
-          <router-view  @extend-session="showExtendPopupDialog()" ></router-view>
-
-
-
-
+        <div
+          class="container-fluid allContent"
+          :style="{ padding: `${this.padding0}` }"
+        >
+          <router-view @extend-session="showExtendPopupDialog()"></router-view>
         </div>
       </section>
     </div>
-
-
   </div>
-
-
-
 </template>
-
-
-
 
 <script>
 /*
@@ -137,28 +133,24 @@ var onLoadContentWidth = window.innerWidth - onLoadSidebarWidth;
 import moment from "moment";
 import axios from "axios";
 
-
 export default {
   props: ["emitSearch"],
-  components: {
-
-
-  },
+  components: {},
   data() {
     return {
-      showLeftMenu:true,
-      countdownSize:'width:20rem',
-      deadline:'2023-12-25 00:00:00',
-      timerExtend:'',
-      showCountDownDialog:false,
-      isLoading:false,
-      error:false,
+      showLeftMenu: true,
+      countdownSize: "width:20rem",
+      deadline: "2023-12-25 00:00:00",
+      timerExtend: "",
+      showCountDownDialog: false,
+      isLoading: false,
+      error: false,
       TopBackgroundStyle: "",
       showSearch: false,
       MainTitleText: "", //this._rootAppTitle,
       showMenu: true,
 
-      userType: '',
+      userType: "",
       //what app is it (for differnet links in left sidebar menu)
       isCDE: false,
       isQMS: false,
@@ -174,7 +166,7 @@ export default {
       isCentered: false, //sidebar icons on left at page load
       iconCloseOpen: "&#9776;",
       iconCloseOpen2: "&#9776;",
-      timeout:'',
+      timeout: "",
     };
   },
 
@@ -208,12 +200,11 @@ export default {
 
       localStorage.setItem("dividerPosition", this.dividerPosition);
 
-        if( this.dividerPosition < 50){
-          this.showLeftMenu=false;
-        }else{
-          this.showLeftMenu=true;
-        }
-
+      if (this.dividerPosition < 50) {
+        this.showLeftMenu = false;
+      } else {
+        this.showLeftMenu = true;
+      }
 
       // -------------------
     },
@@ -261,13 +252,13 @@ export default {
         }
       }
 
-      if( this.dividerPosition < 50){
-          this.showLeftMenu=false;
-        }else{
-          this.showLeftMenu=true;
-        }
+      if (this.dividerPosition < 50) {
+        this.showLeftMenu = false;
+      } else {
+        this.showLeftMenu = true;
+      }
 
-       // alert(this.dividerPosition)
+      // alert(this.dividerPosition)
     },
 
     getDimensions() {
@@ -279,12 +270,10 @@ export default {
         this.isActive = true;
         this.iconCloseOpen = "&times;";
         this.isCentered = false;
-
       } else {
         this.dividerPosition = this.menuMinSize;
         this.isActive = false;
         this.iconCloseOpen = "&#9776;";
-
 
         //  this.isCentered = true;
       }
@@ -317,8 +306,7 @@ export default {
         this.iconCloseOpen = "&times;";
         localStorage.setItem("isSideBarOpen", true);
 
-          this.showLeftMenu=true;
-
+        this.showLeftMenu = true;
       } else {
         //we wnat to close it
         this.dividerPosition = this.menuMinSize;
@@ -328,13 +316,12 @@ export default {
         this.iconCloseOpen = "&#9776;";
         localStorage.setItem("isSideBarOpen", false);
 
-         this.showLeftMenu=false;
+        this.showLeftMenu = false;
       }
-
 
       this.emitter.emit("newDimensions", this.dividerPosition);
 
-       localStorage.setItem("dividerPosition", this.dividerPosition);
+      localStorage.setItem("dividerPosition", this.dividerPosition);
     },
 
     sidebarColapseOnLoad() {
@@ -385,11 +372,11 @@ export default {
     },
 
     appType(what) {
-     this.isCDE = false;
-     this.isQMS = false;
-     this.isSafetyfile = false;
+      this.isCDE = false;
+      this.isQMS = false;
+      this.isSafetyfile = false;
 
-    if (what == "CDE") {
+      if (what == "CDE") {
         this.isCDE = true;
       }
       if (what == "QMS") {
@@ -400,8 +387,7 @@ export default {
       }
     },
 
-    showExtendPopupDialog(){
-
+    showExtendPopupDialog() {
       // Countdown component:
       // https://github.com/coskuncay/vue3-flip-countdown
 
@@ -410,107 +396,90 @@ export default {
       const SHOWWARNING = SESSIONTIMEOUT - 1; // 1 minute before expiry
 
       //first read when session expire
-        var expiresIn = localStorage.getItem("expiresIn");
-        const NowTime = moment();
-        //const DeadLine = (NowTime*1) + (expiresIn*1);   // server session expiration
-        const LocalDeadLine =  (NowTime*1) + (1000*60*SESSIONTIMEOUT);  // time to countdown
+      var expiresIn = localStorage.getItem("expiresIn");
+      const NowTime = moment();
+      //const DeadLine = (NowTime*1) + (expiresIn*1);   // server session expiration
+      const LocalDeadLine = NowTime * 1 + 1000 * 60 * SESSIONTIMEOUT; // time to countdown
 
-        this.deadline = (moment(LocalDeadLine).format('YYYY-MM-DD HH:mm:ss'));// local session expiration (formated)
+      this.deadline = moment(LocalDeadLine).format("YYYY-MM-DD HH:mm:ss"); // local session expiration (formated)
 
-        this._whenSessionExpire = this.LocalDeadLine;
+      this._whenSessionExpire = this.LocalDeadLine;
 
-        // When to show estend session dialog?
-        expiresIn = ((1000*60)*SHOWWARNING);
-       // expiresIn = 5000; // for test: 5 seconds until popup show
+      // When to show estend session dialog?
+      expiresIn = 1000 * 60 * SHOWWARNING;
+      // expiresIn = 5000; // for test: 5 seconds until popup show
 
+      clearTimeout(this.timeout);
 
-          clearTimeout(this.timeout);
-
-          this.timeout = setTimeout(() => {
-            this.showCountDownDialog = true;
-            }, expiresIn);
-
-
+      this.timeout = setTimeout(() => {
+        this.showCountDownDialog = true;
+      }, expiresIn);
     },
 
+    async extendSessionInDatabase() {
+      const sessionId = this.$store.getters.token;
+      const baseUrl = localStorage.getItem("_rootRestUrl");
 
-      async  extendSessionInDatabase(){
+      let formData = JSON.stringify({ sessionId: sessionId });
+      let config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
 
+      await axios
 
+        .put(baseUrl + "/api/v1/Auth/ExtendSession/", formData, config)
+        .then(() => {
+          this.showExtendPopupDialog();
+        })
+        .catch(function (error) {
+          // handle error
+          if (error.response.status == "401") {
+            //not authorized, token expires
+            localStorage.clear();
+            document.location = "/";
+          }
+          console.table(error);
+        });
 
-          const sessionId=this.$store.getters.token;
-          const baseUrl = localStorage.getItem("_rootRestUrl");
-
-          let formData = JSON.stringify({ sessionId: sessionId });
-          let config = {
-            headers: {
-              "Content-Type": "application/json",
-            },
-
-          };
-
-          await  axios
-
-            .put(baseUrl + "/api/v1/Auth/ExtendSession/", formData, config)
-            .then(() => {
-              this.showExtendPopupDialog()
-
-            })
-            .catch(function (error) {
-                // handle error
-                if(error.response.status=='401') { //not authorized, token expires
-                localStorage.clear();
-                document.location = '/';
-              }
-                console.table(error);
-            });
-
-          // after every request
-         //   this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
-            this.showExtendPopupDialog(); // extend timeout to show expire session dialog
-            // ---------------------
-
-
+      // after every request
+      //   this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
+      this.showExtendPopupDialog(); // extend timeout to show expire session dialog
+      // ---------------------
     },
 
-    sessionExpired(){
+    sessionExpired() {
+      this.$store.dispatch("logout");
+      //   document.location = '/';
+    },
 
-       this.$store.dispatch('logout');
-    //   document.location = '/';
-
-     },
-
-     closeTimeDialog(){
-      this.showCountDownDialog=false;
+    closeTimeDialog() {
+      this.showCountDownDialog = false;
       this.extendSessionInDatabase();
-
-     },
+    },
 
     emitedSearch() {},
   },
- // emits: ["emitSearch"],
+  // emits: ["emitSearch"],
 
   mounted() {
-
-       //what app, dieffent sidebar manu links
-   // this.userType = (this.$store.getters.getUserType).toUpperCase();
+    //what app, dieffent sidebar manu links
+    // this.userType = (this.$store.getters.getUserType).toUpperCase();
 
     window.addEventListener("resize", this.getDimensions);
 
     this.showExtendPopupDialog();
-
   },
   unmounted() {
     window.removeEventListener("resize", this.getDimensions);
   },
 
   created() {
-
-    const appType =  localStorage.getItem("appType");
-    if(appType=='CDE'){
+    const appType = localStorage.getItem("appType");
+    if (appType == "CDE") {
       this.isCDE = true;
     }
-
 
     this.setToFullScreenWidth();
 
@@ -520,7 +489,7 @@ export default {
     }
 
     //check if user is loggen in
-  //  this.$store.dispatch("autoLogin");
+    //  this.$store.dispatch("autoLogin");
 
     //on create (on load)
     // this.projects = projectsObject; // parsed json
@@ -547,7 +516,6 @@ export default {
 @import "primevue/resources/themes/bootstrap4-light-blue/theme.css"; /*theme*/
 @import "primevue/resources/primevue.min.css   "; /*core css*/
 @import "primeicons/primeicons.css   "; /*icons*/
-
 
 a.router-link-active {
   background: #730e27;
@@ -577,7 +545,7 @@ a.router-link-active:hover {
   position: absolute;
   left: 3px;
   width: calc(100% - 6px);
-  height:calc(100vh - 120px)
+  height: calc(100vh - 120px);
 }
 a.router-link-active,
 a.router-link-active:hover {
@@ -631,8 +599,8 @@ a.router-link-active:hover {
   width: 100%;
   padding-left: 6px;
   padding-right: 6px;
-  height:44px;
-  width: calc(100% - 8px)
+  height: 44px;
+  width: calc(100% - 8px);
 }
 .sidebarMenuRow:hover {
   background-color: #c2c2c2;
@@ -641,35 +609,60 @@ a.router-link-active:hover {
 .menuDesc {
   margin-left: 12px;
 }
-#mainProjectTitle{color:black}
-#mainProjectTitle h3{font-size:19px;margin-bottom:5px !important}
-#mainProjectTitle h5{font-size:14px}
+#mainProjectTitle {
+  color: black;
+}
+#mainProjectTitle h3 {
+  font-size: 19px;
+  margin-bottom: 5px !important;
+}
+#mainProjectTitle h5 {
+  font-size: 14px;
+}
 
-.p-datatable thead tr th{
+.p-datatable thead tr th {
   background: #730e27 !important;
   color: white !important;
 }
 
-.p-column-filter-menu-button{color:white !important}
+.p-column-filter-menu-button {
+  color: white !important;
+}
 
-#timerDialog{
-  border:1px solid #DDD;
-  background:#dadada;
+#timerDialog {
+  border: 1px solid #ddd;
+  background: #dadada;
   box-shadow: 1px 3px 3px #333;
-  padding:10px;
+  padding: 10px;
   border-radius: 8px;
-
 }
 
-#extendSessionButton{
-  margin:12px;
+#extendSessionButton {
+  margin: 12px;
 }
-.backdrop{backdrop-filter: blur(2px);background-color:rgba(255, 255, 255, 0.0) !important}
+.backdrop {
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, 0) !important;
+}
 
-.sideBarAppLogo{margin-bottom:8px;margin-left: 13px; max-width: calc(100% - 70px);min-width:150px;position:absolute;bottom:25px}
+.sideBarAppLogo {
+  margin-bottom: 8px;
+  margin-left: 13px;
+  max-width: calc(100% - 70px);
+  min-width: 150px;
+  position: absolute;
+  bottom: 25px;
+}
 
-.allContent{background:white;z-index:99;position:relative;overflow: hidden; }
-.topLoginBar{z-index:100;position:fixed;top:0px}
+.allContent {
+  background: white;
+  z-index: 99;
+  position: relative;
+  overflow: hidden;
+}
+.topLoginBar {
+  z-index: 100;
+  position: fixed;
+  top: 0px;
+}
 </style>
-
-

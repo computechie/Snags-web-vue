@@ -6,7 +6,6 @@
   >
     <div class="container-fluid" style="position: relative">
       <div class="row align-items-center topLoginBarRow">
-        
         <div class="col-9 col-md-4" v-if="this.$store.getters.isAuthenticated">
           <!-- <img :src="_rootLoginLogoWhite" class="imf-fluid" /> -->
           <img :src="_rootLoginLogo" class="imf-fluid" />
@@ -23,15 +22,15 @@
             v-on:click="openCloseMenu()"
             v-html="menuIcon"
           ></button>
-         <!-- <img
+          <!-- <img
             :src="_rootLoginLogo"
             style="margin-bottom:8px;margin-left: 13px; max-width: calc(100% - 70px)"
           />-->
 
-              <div class="projectTitle">     
-                   <div class="projectNameHeadline">DORMITORY DEMO PROJECT</div>
-                    <div class="documentTypeHeadline">Snags</div>
-              </div>
+          <div class="projectTitle">
+            <div class="projectNameHeadline">DORMITORY DEMO PROJECT</div>
+            <div class="documentTypeHeadline">Snags</div>
+          </div>
         </div>
 
         <div
@@ -128,8 +127,7 @@
                           <strong>Firstname Lastname</strong>
                         </div>
                         <div class="col-12">
-                         
-                         <!--- <a
+                          <!--- <a
                             class="mOver small"
                             href="/identity"
                             target="_blank"
@@ -142,16 +140,23 @@
                   </div>
 
                   <hr />
-                  <a class="dropdown-item" href="#" target="_blank" @click="changepasswordClick"
-                    ><i class="fa-solid fa-lock blueIcons"></i> Change password</a
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    target="_blank"
+                    @click="changepasswordClick"
+                    ><i class="fa-solid fa-lock blueIcons"></i> Change
+                    password</a
                   >
                   <hr />
                   <a class="dropdown-item" href="" @click="signoutClick"
-                    ><i class="fa-solid fa-arrow-right-from-bracket blueIcons" ></i> Sign
-                    out</a
+                    ><i
+                      class="fa-solid fa-arrow-right-from-bracket blueIcons"
+                    ></i>
+                    Sign out</a
                   >
                   <hr />
-<a
+                  <a
                     class="dropdown-item"
                     :href="_rootLinkToUpdateHistory"
                     target="_blank"
@@ -166,7 +171,6 @@
                     target="_blank"
                     ><i class="icon-info blueIcons"></i> About</a
                   >
-                  
                 </div>
               </div>
             </div>
@@ -210,77 +214,90 @@
     </div>
   </div>
 
-<!-- Change Password Dialog-->
-<Dialog
-  @update:visible="handleClose"
-  v-model:visible="changePasswordDialog"
-  modal
-  :style="{ width: '50rem' }"
-  :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
->
-  <template #header>
-    Change Password
-  </template> 
+  <!-- Change Password Dialog-->
+  <Dialog
+    @update:visible="handleClose"
+    v-model:visible="changePasswordDialog"
+    modal
+    :style="{ width: '50rem' }"
+    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
+  >
+    <template #header> Change Password </template>
 
-  <div class="container" id="formContainer">
+    <div class="container" id="formContainer">
+      <div class="row insertFormRow align-items-center">
+        <div class="col-md-3">
+          <label for="currentPasswordInput">Current Password *</label>
+        </div>
+        <div class="col-md-9">
+          <InputText
+            @input="currentPasswordOK = true"
+            id="currentPasswordInput"
+            v-model="currentPasswordInput"
+          />
+          <InlineMessage v-if="!currentPasswordOK"
+            >This field is required</InlineMessage
+          >
+        </div>
+      </div>
+
+      <div class="row insertFormRow align-items-center">
+        <div class="col-md-3">
+          <label for="newPasswordInput">New Password *</label>
+        </div>
+        <div class="col-md-9">
+          <InputText
+            @input="newPasswordOK = true"
+            id="newPasswordInput"
+            v-model="newPasswordInput"
+          />
+          <InlineMessage v-if="!newPasswordOK"
+            >This field is required</InlineMessage
+          >
+        </div>
+      </div>
+    </div>
+
     <div class="row insertFormRow align-items-center">
-      <div class="col-md-3">
-        <label for="currentPasswordInput">Current Password *</label>
+      <div class="col-md-6 text-left">
+        <Button
+          @click="closeChangePasswordDialog"
+          style="min-width: 120px"
+          v-tooltip.bottom="{
+            value: 'Cancel',
+            showDelay: 1000,
+            hideDelay: 300,
+          }"
+          icon="pi pi-times-circle"
+          type="button"
+          class="p-button-text redButton"
+          >Cancel</Button
+        >
       </div>
-      <div class="col-md-9">
-        <InputText
-          @input="currentPasswordOK=true"
-          id="currentPasswordInput"
-          v-model="currentPasswordInput"
-        />
-        <InlineMessage v-if="!currentPasswordOK">This field is required</InlineMessage>
+      <div class="col-md-6 text-end">
+        <Button
+          style="min-width: 120px"
+          v-tooltip.bottom="{
+            value: 'Update Password',
+            showDelay: 1000,
+            hideDelay: 300,
+          }"
+          type="button"
+          icon="pi pi-pencil"
+          class="p-button-text"
+          @click="updatePassword"
+          >Update</Button
+        >
       </div>
     </div>
-
-    <div class="row insertFormRow align-items-center">
-      <div class="col-md-3"><label for="newPasswordInput">New Password *</label></div>
-      <div class="col-md-9">
-        <InputText
-          @input="newPasswordOK=true"
-          id="newPasswordInput"
-          v-model="newPasswordInput"
-        />
-        <InlineMessage v-if="!newPasswordOK">This field is required</InlineMessage>
-      </div>
-    </div>
-  </div>
-
-  <div class="row insertFormRow align-items-center">
-    <div class="col-md-6 text-left">
-      <Button
-        @click="closeChangePasswordDialog"
-        style="min-width:120px"
-        v-tooltip.bottom="{ value: 'Cancel', showDelay: 1000, hideDelay: 300 }"
-        icon="pi pi-times-circle"
-        type="button"
-        class="p-button-text redButton"
-      >Cancel</Button>
-
-    </div>
-    <div class="col-md-6 text-end">
-      <Button
-        style="min-width:120px"
-        v-tooltip.bottom="{ value: 'Update Password', showDelay: 1000, hideDelay: 300 }" 
-        type="button"
-        icon="pi pi-pencil"
-        class="p-button-text"
-        @click="updatePassword"
-      >Update</Button>
-    </div>
-  </div>
-</Dialog>
+  </Dialog>
 </template>
 
 <script>
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import InlineMessage from 'primevue/inlinemessage';
+import Dialog from "primevue/dialog";
+import InputText from "primevue/inputtext";
+import Button from "primevue/button";
+import InlineMessage from "primevue/inlinemessage";
 
 export default {
   props: [
@@ -296,32 +313,32 @@ export default {
     Dialog,
     InputText,
     Button,
-    InlineMessage
+    InlineMessage,
   },
 
   data() {
     return {
       changePasswordDialog: false,
-      currentPasswordInput: '',
-      newPasswordInput: '',
+      currentPasswordInput: "",
+      newPasswordInput: "",
       currentPasswordOK: true,
       newPasswordOK: true,
     };
   },
   mounted() {},
   methods: {
-    updatePassword  () {
-      alert('TODO: implement update password');
+    updatePassword() {
+      alert("TODO: implement update password");
     },
     closeChangePasswordDialog() {
       this.changePasswordDialog = false;
     },
-    handleClose(){
+    handleClose() {
       this.changePasswordDialog = false;
     },
     userInitials() {
       //const fullName = this.$store.getters.getUserFullName;
-      const fullName ="Firstname Lastname";
+      const fullName = "Firstname Lastname";
       return fullName
         .match(/(\b\S)?/g)
         .join("")
@@ -330,7 +347,6 @@ export default {
         .toUpperCase();
     },
     clickOnHelp() {
-    
       window.open(this._rootlinkToHelpFile, "_blank");
     },
     changepasswordClick(e) {
@@ -368,7 +384,7 @@ export default {
 .text-in-circle-icon {
   position: relative;
   display: inline-block;
-  border: 1px solid #138BA7;
+  border: 1px solid #138ba7;
   border-radius: 50%;
   width: 29px;
   height: 29px;
@@ -425,7 +441,7 @@ export default {
 }
 .sidebarCollapseBtn {
   width: 50px;
-  font-size:26px;
+  font-size: 26px;
   margin-left: 2px;
 }
 #hereMoveSearch {
@@ -433,11 +449,22 @@ export default {
   padding-right: 10px;
 }
 
-a:link {color:black !important}
-a.signInHref{color:white !important}
-.blueIcons {color:rgb(142, 53, 46) }
+a:link {
+  color: black !important;
+}
+a.signInHref {
+  color: white !important;
+}
+.blueIcons {
+  color: rgb(142, 53, 46);
+}
 
-
-.projectTitle{display:inline-block}
-.sidebarCollapseBtn{display:inline-block;position: relative;top:-5px}
+.projectTitle {
+  display: inline-block;
+}
+.sidebarCollapseBtn {
+  display: inline-block;
+  position: relative;
+  top: -5px;
+}
 </style>

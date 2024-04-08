@@ -1,61 +1,60 @@
 <script>
-import { defineComponent, h } from 'vue'
+import { defineComponent, h } from "vue";
 
-import { Doughnut } from 'vue-chartjs'
+import { Doughnut } from "vue-chartjs";
 import {
   Chart as ChartJS,
   Title,
   Tooltip,
   Legend,
   ArcElement,
-  CategoryScale
-} from 'chart.js'
+  CategoryScale,
+} from "chart.js";
 
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale)
+ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 export default defineComponent({
- 
   props: {
     chartId: {
       type: String,
-      default: 'doughnut-chart'
+      default: "doughnut-chart",
     },
     width: {
       type: Number,
-      default: 400
+      default: 400,
     },
     height: {
       type: Number,
-      default: 400
+      default: 400,
     },
     cssClasses: {
-      default: '',
-      type: String
+      default: "",
+      type: String,
     },
     styles: {
-     // type: Object as PropType<Partial<CSSStyleDeclaration>>,
-      default: () => {}
+      // type: Object as PropType<Partial<CSSStyleDeclaration>>,
+      default: () => {},
     },
     plugins: {
-    //  type: Array as PropType<Plugin<'doughnut'>[]>,
-      default: () => []
-    }
+      //  type: Array as PropType<Plugin<'doughnut'>[]>,
+      default: () => [],
+    },
   },
   setup(props) {
     const chartData = {
-      labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
+      labels: ["VueJs", "EmberJs", "ReactJs", "AngularJs"],
       datasets: [
         {
-          backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16'],
-          data: [40, 20, 80, 10]
-        }
-      ]
-    }
+          backgroundColor: ["#41B883", "#E46651", "#00D8FF", "#DD1B16"],
+          data: [40, 20, 80, 10],
+        },
+      ],
+    };
 
     const chartOptions = {
       responsive: true,
-      maintainAspectRatio: false
-    }
+      maintainAspectRatio: false,
+    };
 
     return () =>
       h(Doughnut, {
@@ -66,8 +65,8 @@ export default defineComponent({
         height: props.height,
         cssClasses: props.cssClasses,
         styles: props.styles,
-        plugins: props.plugins
-      })
-  }
-})
+        plugins: props.plugins,
+      });
+  },
+});
 </script>
