@@ -36,7 +36,7 @@ import Multiselect from '@vueform/multiselect'; //multi select userguide: https:
 import Tooltip from 'primevue/tooltip';
 import SwiperCarouselVue from "./components/ui/SwiperCarousel.vue";
 import VueImageZoomer from 'vue-image-zoomer'; // https://github.com/samjonesigd/vue-image-zoomer
-import 'vue-image-zoomer/dist/style.css'; 
+import 'vue-image-zoomer/dist/style.css';
 import Countdown from 'vue3-flip-countdown';
 
 
@@ -62,7 +62,7 @@ const router = createRouter({
   routes: [
    // { path: "/", component: LoginPage, meta: { requiresUnAuth: true } },
       { path: "/", component: PageSnags, redirect: "/pages/snags", },
-    
+
     {
           path: "/resetPassword/:resetKey",
           component: ResetPassword,
@@ -75,19 +75,19 @@ const router = createRouter({
           path: "/forgotPassword",
           component: ForgotPassword,
           name:"ForgotPassword",
-         
+
           meta: { requiresAuth: false }
         },
-    
+
     {
-    
-    
+
+
       path: "/pages",
       component: PagesHolder,
       redirect: "/",
 
-      children: [    
-                 
+      children: [
+
         // PAGES
         {
             path: "/pages/snags",
@@ -103,18 +103,18 @@ const router = createRouter({
           meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
         },
         {
-                    
-            
+
+
             path: "/pages/manageUsers",
             component: ManageUsers,
             name: "manageUsers",
             meta: { requiresAuth: true }
-        
-   
+
+
       },
 
         //-- end pages
-       
+
       ],
     },
   ],
@@ -158,7 +158,7 @@ axios.get("/settings.json").then((resp) => {
 
   Object.keys(obj).forEach(function (key) {
     var value = obj[key];
-    
+
     //global variables read from /settings.json file!!
     if (key == "RestUrl") {
       app.config.globalProperties._rootRestUrl = value;
@@ -214,7 +214,7 @@ axios.get("/settings.json").then((resp) => {
   app.component("menu-linkdirect", SidebarMenuLinkDirect);
   app.component("v-select", Multiselect);
   app.component("SwiperCarousel", SwiperCarouselVue);
- 
+
   app.directive('tooltip', Tooltip);
 
 

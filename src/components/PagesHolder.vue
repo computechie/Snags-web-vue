@@ -9,12 +9,12 @@
   <base-dialog  :show="showCountDownDialog" fixed  >
     <div id="timerDialog"  class="text-center">
         <h5>Your session will expire soon!</h5>
-        <vue3-flip-countdown :showDays="false" :showHours="false"  mainColor="#e2e2e2" secondFlipColor="#ffffff" mainFlipBackgroundColor="#147d95" secondFlipBackgroundColor='#730e27'  :deadline="deadline" @timeElapsed="sessionExpired()"/>  
+        <vue3-flip-countdown :showDays="false" :showHours="false"  mainColor="#e2e2e2" secondFlipColor="#ffffff" mainFlipBackgroundColor="#147d95" secondFlipBackgroundColor='#730e27'  :deadline="deadline" @timeElapsed="sessionExpired()"/>
         <button class="btn btn-primary" id="extendSessionButton" @click="closeTimeDialog">Keep alive</button>
-    </div> 
-  </base-dialog>      
+    </div>
+  </base-dialog>
 
-    
+
 
 
   <top-bar
@@ -52,8 +52,8 @@
           iconsize="21"
           :isActive="isActive"
         ></menu-link>
-       
-       
+
+
         <menu-link
           v-if="userType=='ADMIN'"
           atitle="Manage users"
@@ -62,10 +62,10 @@
           iconsize="17"
           :isActive="isActive"
         ></menu-link>
-        
+
 
         <sidebar-cde :isActive="isActive" v-if="isCDE" ></sidebar-cde>
-        
+
   -    <img :src="_rootLoginLogo" class="sideBarAppLogo"     />
 
 
@@ -95,18 +95,18 @@
       id="content"
       class="content"
       :style="{
-       
+
         paddingLeft: `${dividerPosition}px`,
         width: `${contentWidth}px`,
       }"
     >
       <section>
         <div class="container-fluid allContent"  :style="{ padding: `${this.padding0}` }">
-          
-          
+
+
           <router-view  @extend-session="showExtendPopupDialog()" ></router-view>
-          
-         
+
+
 
 
         </div>
@@ -141,8 +141,8 @@ import axios from "axios";
 export default {
   props: ["emitSearch"],
   components: {
-    
-   
+
+
   },
   data() {
     return {
@@ -157,7 +157,7 @@ export default {
       showSearch: false,
       MainTitleText: "", //this._rootAppTitle,
       showMenu: true,
-    
+
       userType: '',
       //what app is it (for differnet links in left sidebar menu)
       isCDE: false,
@@ -279,13 +279,13 @@ export default {
         this.isActive = true;
         this.iconCloseOpen = "&times;";
         this.isCentered = false;
-       
+
       } else {
         this.dividerPosition = this.menuMinSize;
         this.isActive = false;
         this.iconCloseOpen = "&#9776;";
-      
-      
+
+
         //  this.isCentered = true;
       }
 
@@ -316,9 +316,9 @@ export default {
         this.isCentered = false;
         this.iconCloseOpen = "&times;";
         localStorage.setItem("isSideBarOpen", true);
-        
+
           this.showLeftMenu=true;
-       
+
       } else {
         //we wnat to close it
         this.dividerPosition = this.menuMinSize;
@@ -330,8 +330,8 @@ export default {
 
          this.showLeftMenu=false;
       }
-       
-       
+
+
       this.emitter.emit("newDimensions", this.dividerPosition);
 
        localStorage.setItem("dividerPosition", this.dividerPosition);
@@ -388,7 +388,7 @@ export default {
      this.isCDE = false;
      this.isQMS = false;
      this.isSafetyfile = false;
-    
+
     if (what == "CDE") {
         this.isCDE = true;
       }
@@ -406,7 +406,7 @@ export default {
       // https://github.com/coskuncay/vue3-flip-countdown
 
       const SESSIONTIMEOUT = 15; //minutes
-      
+
       const SHOWWARNING = SESSIONTIMEOUT - 1; // 1 minute before expiry
 
       //first read when session expire
@@ -414,27 +414,27 @@ export default {
         const NowTime = moment();
         //const DeadLine = (NowTime*1) + (expiresIn*1);   // server session expiration
         const LocalDeadLine =  (NowTime*1) + (1000*60*SESSIONTIMEOUT);  // time to countdown
-     
+
         this.deadline = (moment(LocalDeadLine).format('YYYY-MM-DD HH:mm:ss'));// local session expiration (formated)
 
         this._whenSessionExpire = this.LocalDeadLine;
 
-        // When to show estend session dialog? 
-        expiresIn = ((1000*60)*SHOWWARNING); 
+        // When to show estend session dialog?
+        expiresIn = ((1000*60)*SHOWWARNING);
        // expiresIn = 5000; // for test: 5 seconds until popup show
-        
-   
+
+
           clearTimeout(this.timeout);
 
           this.timeout = setTimeout(() => {
             this.showCountDownDialog = true;
             }, expiresIn);
-      
-     
+
+
     },
 
-   
-      async  extendSessionInDatabase(){ 
+
+      async  extendSessionInDatabase(){
 
 
 
@@ -448,14 +448,14 @@ export default {
             },
 
           };
-   
+
           await  axios
-        
+
             .put(baseUrl + "/api/v1/Auth/ExtendSession/", formData, config)
             .then(() => {
               this.showExtendPopupDialog()
-          
-            })           
+
+            })
             .catch(function (error) {
                 // handle error
                 if(error.response.status=='401') { //not authorized, token expires
@@ -464,20 +464,20 @@ export default {
               }
                 console.table(error);
             });
-            
-          // after every request 
+
+          // after every request
          //   this.$store.dispatch('autoLogin');  // go to AUTOLOGIN to extend "local" token valication
             this.showExtendPopupDialog(); // extend timeout to show expire session dialog
             // ---------------------
-         
+
 
     },
 
     sessionExpired(){
-      
+
        this.$store.dispatch('logout');
     //   document.location = '/';
-       
+
      },
 
      closeTimeDialog(){
@@ -494,7 +494,7 @@ export default {
 
        //what app, dieffent sidebar manu links
    // this.userType = (this.$store.getters.getUserType).toUpperCase();
-   
+
     window.addEventListener("resize", this.getDimensions);
 
     this.showExtendPopupDialog();
@@ -505,7 +505,7 @@ export default {
   },
 
   created() {
-  
+
     const appType =  localStorage.getItem("appType");
     if(appType=='CDE'){
       this.isCDE = true;
@@ -658,7 +658,7 @@ a.router-link-active:hover {
   box-shadow: 1px 3px 3px #333;
   padding:10px;
   border-radius: 8px;
- 
+
 }
 
 #extendSessionButton{
@@ -669,7 +669,7 @@ a.router-link-active:hover {
 .sideBarAppLogo{margin-bottom:8px;margin-left: 13px; max-width: calc(100% - 70px);min-width:150px;position:absolute;bottom:25px}
 
 .allContent{background:white;z-index:99;position:relative;overflow: hidden; }
-.topLoginBar{z-index:100;position:absolute;top:0px}
+.topLoginBar{z-index:100;position:fixed;top:0px}
 </style>
 
 
