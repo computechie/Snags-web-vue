@@ -159,7 +159,7 @@ export default {
       this.localEditSnagDialog = newValue;
     },
     snagData(newValue) {
-      this.editSnagDate = moment(String(newValue.date)).format("DD/MM/YYYY");//newValue.editSnagDate;
+      this.editSnagDate = moment(String(newValue.date)).format("DD/MM/YYYY");
       this.editSnagTitle = newValue.caption;
       this.editSnagCode = newValue.code;
       this.editSnagStatus = newValue.status;

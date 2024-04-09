@@ -959,7 +959,6 @@ import Button from "primevue/button";
 import Calendar from "primevue/calendar";
 import Dialog from "primevue/dialog";
 import InlineMessage from "primevue/inlinemessage";
-//import InputNumber from 'primevue/inputnumber';
 import Dropdown from "primevue/dropdown";
 import FileUpload from "primevue/fileupload";
 import Checkbox from "primevue/checkbox";
@@ -983,7 +982,6 @@ export default {
     Calendar,
     Dialog,
     InlineMessage,
-    //InputNumber,
     Dropdown,
     FileUpload,
     Checkbox,
@@ -1630,6 +1628,7 @@ export default {
 
     format_date_to_full(aDate, aTime) {
       //excpected input: 14/04/2023
+      if (!aDate) return;
       var year = aDate.substring(6, 10);
       var month = aDate.substring(3, 5);
       var day = aDate.substring(0, 2);
@@ -1639,6 +1638,7 @@ export default {
 
     format_date_to_full_time(aDate) {
       //excpected input: 14/04/2023 14:33
+      if (!aDate) return;
       var year = aDate.substring(6, 10);
       var month = aDate.substring(3, 5);
       var day = aDate.substring(0, 2);
