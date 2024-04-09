@@ -614,6 +614,7 @@
     :openDialogAddPhoto="openDialogAddPhoto"
   />
 
+  <!-- TODO: merge new/edit in 1 component? -->
   <NewSnagDialog
     :newSnagDialog="newSnagDialogState"
     :allStatuses="allStatuses"
@@ -621,119 +622,13 @@
     :insertSnagToDatabase="InsertSnagToDatabase"
   />
 
-  <!-- Edit Snag Dialog-->
-  <Dialog
-    @update:visible="handleClose"
-    v-model:visible="editSnagDialog"
-    modal
-    :style="{ width: '50rem' }"
-    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-  >
-    <template #header> Edit Snag </template>
-
-    <div class="container" id="formContainer">
-      <div class="row insertFormRow align-items-center even">
-        <div class="col-md-3">
-          <label for="editSnagDate">Required by Date *</label>
-        </div>
-        <div class="col-md-9">
-          <Calendar
-            :value="editSnagDate"
-            v-model="editSnagDate"
-            @change="changeDate('from')"
-            style="margin-left: 0"
-            id="editSnagDate"
-            class="dateDisplayInput"
-            showIcon
-            dateFormat="dd/mm/yy"
-            placeholder="dd/mm/yy"
-            mask="99/99/9999"
-          />
-
-          <InlineMessage v-if="!editSnagDateOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-3"><label for="editSnagTitle">Item *</label></div>
-        <div class="col-md-9">
-          <InputText
-            @input="editSnagTitleOK = true"
-            id="editSnagTitle"
-            v-model="editSnagTitle"
-          />
-          <InlineMessage v-if="!editSnagTitleOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center even">
-        <div class="col-md-3"><label for="editSnagStatus">Status *</label></div>
-        <div class="col-md-9">
-          <!--<InputText  @input="editSnagStatusOK=true" id="editSnagStatus" v-model="editSnagStatus" />-->
-          <Dropdown
-            v-model="editSnagStatus"
-            :options="allStatuses"
-            optionLabel="name"
-            :placeholder="editSnagStatus"
-          ></Dropdown>
-          <InlineMessage v-if="!editSnagStatusOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-3"><label for="username">Code *</label></div>
-        <div class="col-md-9">
-          <InputText
-            @input="editSnagCodeOK = true"
-            id="editSnagCode"
-            v-model="editSnagCode"
-          />
-          <InlineMessage v-if="!editSnagCodeOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-6 text-left">
-          <Button
-            @click="closeEditDialog"
-            style="min-width: 120px"
-            v-tooltip.bottom="{
-              value: 'Cancel',
-              showDelay: 1000,
-              hideDelay: 300,
-            }"
-            icon="pi pi-times-circle"
-            type="button"
-            class="p-button-text redButton"
-            label="Cancel"
-          />
-        </div>
-        <div class="col-md-6 text-end">
-          <Button
-            style="min-width: 120px"
-            v-tooltip.bottom="{
-              value: 'Save changes',
-              showDelay: 1000,
-              hideDelay: 300,
-            }"
-            type="button"
-            icon="pi pi-pencil"
-            class="p-button-text"
-            @click="editSnag"
-            label="Save changes"
-          />
-        </div>
-      </div>
-    </div>
-  </Dialog>
+  <EditSnagDialog
+    :snagData="snagData"
+    :editSnagDialog="editSnagDialogState"
+    :allStatuses="allStatuses"
+    :closeEditDialog="closeEditDialog"
+    :editSnagInDatabase="editSnagInDatabase"
+  />
 
   <!-- dialog info -->
   <Dialog
@@ -1054,6 +949,7 @@
 <script>
 import RightSidePanel from "../../ui/RightSidePanel.vue";
 import NewSnagDialog from "../../ui/dialogs/NewSnagDialog.vue";
+import EditSnagDialog from "../../ui/dialogs/EditSnagDialog.vue";
 
 // Primevue datatable help: https://www.primefaces.org/primevue/datatable //
 import DataTable from "primevue/datatable";
@@ -1079,6 +975,7 @@ export default {
   components: {
     RightSidePanel,
     NewSnagDialog,
+    EditSnagDialog,
     InputText,
     Button,
     DataTable,
@@ -1219,7 +1116,7 @@ export default {
       deletingTripName: "",
       snagNotes: "",
       newSnagDialogState: false,
-      editSnagDialog: false,
+      editSnagDialogState: false,
       isLoading: true,
       userType: "",
       userLocale: "",
@@ -1251,26 +1148,7 @@ export default {
       InfoModalHeader: "",
       InfoModalMessage: "",
 
-      editSnagDate: "",
-      editSnagTitle: "",
-      editSnagCode: "",
-      editSnagCargoName: "",
-      editSnagFixedCosts: "0",
-      editSnagDistance: "0",
-      editSnagDistanceCosts: "0",
-      editSnagStatus: "",
-      editSnagComments: "",
-
-      editSnagDateOK: true,
-      editSnagTitleOK: true,
-      editSnagCodeOK: true,
-      editSnagCargoNameOK: true,
-      editSnagFixedCostsOK: true,
-      editSnagDistanceOK: true,
-      editSnagDistanceCostsOK: true,
-      editSnagStatusOK: true,
-      editSnagCommentsOK: true,
-      editSnagInvoiced: "",
+      snagData: {},
 
       panelClass: "closedPanel",
       /*   filters: {
@@ -1465,63 +1343,12 @@ export default {
     },
 
     newSnag() {
-      this.resetInputFields();
-
       //show dialog for insert
       this.newSnagDialogState = true;
     },
-    editSnag() {
-      var AllOk = true;
-
-      if (this.editSnagDate == "") {
-        this.editSnagDateOK = false;
-        AllOk = false;
-      } else {
-        this.editSnagDateOK = true;
-      }
-
-      if (this.editSnagTitle == "") {
-        this.editSnagTitleOK = false;
-        AllOk = false;
-      } else {
-        this.editSnagTitleOK = true;
-      }
-
-      if (this.editSnagCode == "") {
-        this.editSnagCodeOK = false;
-        AllOk = false;
-      } else {
-        this.editSnagCodeOK = true;
-      }
-
-      if (this.editSnagStatus.name) {
-        this.editSnagStatus = this.editSnagStatus.value;
-      }
-
-      if (this.editSnagStatus == "") {
-        this.editSnagStatusOK = false;
-        AllOk = false;
-      } else {
-        this.editSnagStatusOK = true;
-      }
-
-      /*  if(this.newSnagComments == ''){
-        this.newSnagCommentsOK = false;
-        AllOk = false;
-      }else{this.newSnagCommentsOK = true;}*/
-
-      if (AllOk == true) {
-        this.editSnagInDatabase();
-      }
-    },
-    async editSnagInDatabase() {
+    async editSnagInDatabase(snag) {
       this.panelClass = "closedPanel";
       this.isLoading = true;
-
-      var SnagDate = this.format_date(
-        moment(this.editSnagDate, "DD/MM/YYYY HH:mm"),
-        "YYYY-MM-DD HH:mm:ss"
-      );
 
       const sessionId = this.$store.getters.token;
       const baseUrl = this._rootRestUrl;
@@ -1529,11 +1356,11 @@ export default {
       let formData = JSON.stringify({
         key: this.ClickedRowId,
         sessionId: sessionId,
-        caption: this.editSnagTitle,
-        code: this.editSnagCode,
-        status: this.editSnagStatus,
+        caption: snag.editSnagTitle,
+        code: snag.editSnagCode,
+        status: snag.editSnagStatus,
         userEmail: "",
-        date: SnagDate,
+        date: snag.editSnagDate.toString(),
       });
 
       let config = {
@@ -1548,7 +1375,7 @@ export default {
           .then(() => {
             this.getSnags();
             this.getCompanies();
-            this.editSnagDialog = false;
+            this.editSnagDialogState = false;
 
             this.displayInfoDialog = true;
             this.InfoModalHeader = "Info";
@@ -1556,7 +1383,7 @@ export default {
             this.isLoading = false;
           });
       } catch (error) {
-        this.editSnagDialog = false;
+        this.editSnagDialogState = false;
         this.displayInfoDialog = true;
         this.InfoModalHeader = "Error " + error.response.status;
         this.InfoModalMessage = error.response.data.Message;
@@ -1640,40 +1467,15 @@ export default {
 
     closeInsertDialog() {
       this.newSnagDialogState = false;
-      this.resetInputFields();
     },
 
     closeEditDialog() {
-      this.editSnagDialog = false;
-      //this.resetInputFields();
-    },
-
-    resetInputFields() {
-      //reset input and edit fields ;)
-      this.editSnagDate = "";
-      this.editSnagTitle = "";
-      this.editSnagCode = "";
-      this.editSnagCargoName = "";
-      this.editSnagFixedCosts = "0";
-      this.editSnagDistance = "0";
-      this.editSnagDistanceCosts = "0";
-      this.editSnagStatus = "";
-      this.editSnagComments = "";
-
-      this.editSnagDateOK = true;
-      this.editSnagTitleOK = true;
-      this.editSnagCodeOK = true;
-      this.editSnagCargoNameOK = true;
-      this.editSnagFixedCostsOK = true;
-      this.editSnagDistanceOK = true;
-      this.editSnagDistanceCostsOK = true;
-      this.editSnagStatusOK = true;
-      this.editSnagCommentsOK = true;
+      this.editSnagDialogState = false;
     },
 
     editClick() {
       //show dialog for insert
-      this.editSnagDialog = true;
+      this.editSnagDialogState = true;
     },
 
     deleteClick() {
@@ -2229,12 +2031,12 @@ export default {
 
     onRowClick(event) {
       this.ClickedRowId = event.data.key; // key for update
-      this.editSnagDate = this.format_date(event.data.date, "DD/MM/YYYY");
-      this.editSnagTitle = event.data.caption;
-      this.editSnagStatus = event.data.status;
-      this.editSnagCode = event.data.code;
-
-      // alert( event.data.id);
+      this.snagData = {
+        date: event.data.date,
+        caption: event.data.caption,
+        status: event.data.status,
+        code: event.data.code,
+      };
 
       $(".hiddenFields").each(function () {
         $(this).closest("tr").removeClass("highlight");
@@ -2560,7 +2362,7 @@ export default {
           .then(() => {
             this.getSnags();
             this.getCompanies();
-            this.editSnagDialog = false;
+            this.editSnagDialogState = false;
             this.displayInfoDialog = true;
             this.displayUnInvoiceConfirm = false;
             this.InfoModalHeader = "Info";
