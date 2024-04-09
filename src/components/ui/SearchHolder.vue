@@ -21,7 +21,6 @@
   </teleport>
 </template>
 
-
 <script>
 export default {
   props: ["emitSearch"],
@@ -39,28 +38,24 @@ export default {
     },
 
     getDimensions() {
-       
       //small screens don't teleport search bar at the top
-        if (window.innerWidth <= 768) {
-            this.disabledTeleport = true;
-        }else{
-            this.disabledTeleport = false; 
-            this.WhereMoveSearch = '#hereMoveSearch';
-        }
+      if (window.innerWidth <= 768) {
+        this.disabledTeleport = true;
+      } else {
+        this.disabledTeleport = false;
+        this.WhereMoveSearch = "#hereMoveSearch";
+      }
       //-----------------------------------
-
     },
-    searchTyping(){
-        this.$parent.projectSearch(this.searchValue);
-         
-    }
+    searchTyping() {
+      this.$parent.projectSearch(this.searchValue);
+    },
   },
   emits: ["emitSearch"],
 
-   created() {
-     this.getDimensions()
-     
-  },    
+  created() {
+    this.getDimensions();
+  },
   mounted() {
     window.addEventListener("resize", this.getDimensions);
   },

@@ -6,21 +6,18 @@ export default {
     return state.token;
   },
   isAuthenticated(state) {
-    return !!state.token
+    return !!state.token;
   },
-  getUserFullName(state){
+  getUserFullName(state) {
     return state.userFullname;
   },
-  getUserType(state){
+  getUserType(state) {
     return state.userType;
   },
-  getUserLocale(state){
+  getUserLocale(state) {
     return state.userLocale;
   },
-  didAutoLogout(state){
+  didAutoLogout(state) {
     return state.didAutoLogout;
-  }
- 
-  
-
+  },
 };

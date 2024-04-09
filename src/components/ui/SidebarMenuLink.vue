@@ -5,12 +5,13 @@
     ></span>
     <span class="menuDesc" v-bind:class="{ active: isActive }"
       >{{ atitle }}
-      <span v-if="badge" class="badge bg-primary">{{badge}}</span>
-      <span v-if="messagesBadge" class="badge bg-primary">{{ messagesBadge }}</span></span
+      <span v-if="badge" class="badge bg-primary">{{ badge }}</span>
+      <span v-if="messagesBadge" class="badge bg-primary">{{
+        messagesBadge
+      }}</span></span
     >
   </router-link>
 </template>
-
 
 <script>
 export default {

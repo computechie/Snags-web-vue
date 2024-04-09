@@ -2,9 +2,9 @@ import { createApp, defineAsyncComponent } from "vue";
 import { createRouter, createWebHistory } from "vue-router";
 import axios from "axios";
 import App from "./App.vue";
-import mitt from 'mitt';
+import mitt from "mitt";
 
-import PrimeVue from 'primevue/config';
+import PrimeVue from "primevue/config";
 
 const emitter = mitt();
 
@@ -15,12 +15,12 @@ import LoginPage from "./components/LoginPage.vue";
 const PagesHolder = () => import("./components/PagesHolder.vue");
 
 //--Transport pages
-const PageSnags= () => import("./components/pages/snags/PageSnags.vue");
-const ManageUsers= ()    => import("./components/pages/snags/ManageUsers.vue");
+const PageSnags = () => import("./components/pages/snags/PageSnags.vue");
+const ManageUsers = () => import("./components/pages/snags/ManageUsers.vue");
 
 //--Password recovery pages
-const ResetPassword= ()    => import("./components/pages/ResetPassword.vue");
-const ForgotPassword= ()    => import("./components/pages/ForgotPassword.vue");
+const ResetPassword = () => import("./components/pages/ResetPassword.vue");
+const ForgotPassword = () => import("./components/pages/ForgotPassword.vue");
 
 //includable parts of the page
 import TopBar from "./components/include/TopBar.vue";
@@ -32,13 +32,12 @@ import BaseSpinner from "./components/ui/BaseSpinner.vue";
 import SearchHolder from "./components/ui/SearchHolder.vue";
 import SidebarmenuLink from "./components/ui/SidebarMenuLink.vue";
 import SidebarMenuLinkDirect from "./components/ui/SidebarMenuLinkDirect.vue";
-import Multiselect from '@vueform/multiselect'; //multi select userguide: https://github.com/vueform/multiselect
-import Tooltip from 'primevue/tooltip';
+import Multiselect from "@vueform/multiselect"; //multi select userguide: https://github.com/vueform/multiselect
+import Tooltip from "primevue/tooltip";
 import SwiperCarouselVue from "./components/ui/SwiperCarousel.vue";
-import VueImageZoomer from 'vue-image-zoomer'; // https://github.com/samjonesigd/vue-image-zoomer
-import 'vue-image-zoomer/dist/style.css';
-import Countdown from 'vue3-flip-countdown';
-
+import VueImageZoomer from "vue-image-zoomer"; // https://github.com/samjonesigd/vue-image-zoomer
+import "vue-image-zoomer/dist/style.css";
+import Countdown from "vue3-flip-countdown";
 
 // block of code sometimes loaded
 const ContactInfo = defineAsyncComponent(() =>
@@ -54,74 +53,61 @@ const router = createRouter({
     /* console.log(to);
     console.log(from);
     console.log(savedPosition)*/
-    return { top: 0 }
+    return { top: 0 };
   },
-
 
   history: createWebHistory(""),
   routes: [
-   // { path: "/", component: LoginPage, meta: { requiresUnAuth: true } },
-      { path: "/", component: PageSnags, redirect: "/pages/snags", },
+    // { path: "/", component: LoginPage, meta: { requiresUnAuth: true } },
+    { path: "/", component: PageSnags, redirect: "/pages/snags" },
 
     {
-          path: "/resetPassword/:resetKey",
-          component: ResetPassword,
-          name:"ResetPassword",
-          props:true,
-          meta: { requiresAuth: false }
-        },
-
-        {
-          path: "/forgotPassword",
-          component: ForgotPassword,
-          name:"ForgotPassword",
-
-          meta: { requiresAuth: false }
-        },
+      path: "/resetPassword/:resetKey",
+      component: ResetPassword,
+      name: "ResetPassword",
+      props: true,
+      meta: { requiresAuth: false },
+    },
 
     {
+      path: "/forgotPassword",
+      component: ForgotPassword,
+      name: "ForgotPassword",
 
+      meta: { requiresAuth: false },
+    },
 
+    {
       path: "/pages",
       component: PagesHolder,
       redirect: "/",
 
       children: [
-
         // PAGES
         {
-            path: "/pages/snags",
-            component: PageSnags,
-            name: "PageSnags",
-            meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+          path: "/pages/snags",
+          component: PageSnags,
+          name: "PageSnags",
+          meta: { requiresAuth: false }, // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
         },
         {
           path: "/pages/dashboard",
           component: PageDashboard,
           name: "PageDashboard",
-          meta: { requiresAuth: false } // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
+          meta: { requiresAuth: false }, // CHANGE TO TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!!
         },
         {
-
-
-            path: "/pages/manageUsers",
-            component: ManageUsers,
-            name: "manageUsers",
-            meta: { requiresAuth: true }
-
-
-      },
+          path: "/pages/manageUsers",
+          component: ManageUsers,
+          name: "manageUsers",
+          meta: { requiresAuth: true },
+        },
 
         //-- end pages
-
       ],
     },
   ],
 });
-
-
-
 
 router.beforeEach(function (to, from, next) {
   if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
@@ -140,17 +126,14 @@ router.beforeEach(function (to, from, next) {
 });
 
 const app = createApp(App);
-  import store from "./store/index.js";
+import store from "./store/index.js";
 import PageDashboard from "./components/pages/Dashboard/PageDashboard.vue";
 
-  app.config.globalProperties.emitter = emitter;
-
-
+app.config.globalProperties.emitter = emitter;
 
 //global variables
 app.config.globalProperties._rootVersion = process.env.VUE_APP_VERSION; // get From package.json
 //-- more variables loaded from /settings.json
-
 
 axios.get("/settings.json").then((resp) => {
   var settings = resp.data;
@@ -162,7 +145,7 @@ axios.get("/settings.json").then((resp) => {
     //global variables read from /settings.json file!!
     if (key == "RestUrl") {
       app.config.globalProperties._rootRestUrl = value;
-      localStorage.setItem('_rootRestUrl',value);
+      localStorage.setItem("_rootRestUrl", value);
     }
 
     if (key == "AppTitle") {
@@ -186,13 +169,10 @@ axios.get("/settings.json").then((resp) => {
     if (key == "LinkToUpdateHistory") {
       app.config.globalProperties._rootLinkToUpdateHistory = value;
     }
-
-
-
   });
 
-  app.config.globalProperties._whenSessionExpire = '';
-  app.config.globalProperties._rememberMe = 'ggg';
+  app.config.globalProperties._whenSessionExpire = "";
+  app.config.globalProperties._rememberMe = "ggg";
 
   app.use(router);
   app.use(store);
@@ -215,12 +195,9 @@ axios.get("/settings.json").then((resp) => {
   app.component("v-select", Multiselect);
   app.component("SwiperCarousel", SwiperCarouselVue);
 
-  app.directive('tooltip', Tooltip);
-
-
-
+  app.directive("tooltip", Tooltip);
 
   app.mount("#app");
- });
+});
 
 // -------------------

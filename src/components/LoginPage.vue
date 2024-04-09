@@ -6,7 +6,6 @@
 
   <top-bar
     v-bind:show-search="showSearch"
-   
     title-color="white"
     v-bind:title-text="MainTitleText"
   ></top-bar>
@@ -21,11 +20,7 @@
           <version-info></version-info>
         </div>
         <div
-          class="
-            col-12 col-sm-5 col-lg-4 col-xl-3
-            order-1 order-sm-2
-            text-center
-          "
+          class="col-12 col-sm-5 col-lg-4 col-xl-3 order-1 order-sm-2 text-center"
         >
           <contact-info></contact-info>
         </div>
@@ -66,7 +61,6 @@
                 class="form-control"
                 id="Inputusername"
                 aria-describedby="usernameHelp"
-               
               />
               <div v-if="showUsernameAlert" class="alert alert-danger alert-sm">
                 {{ usernameMessage }}
@@ -80,18 +74,19 @@
                 @keyup="passwordKeyDown"
                 class="form-control"
                 id="InputPassword"
-               
               />
               <div v-if="showPasswordAlert" class="alert alert-danger alert-sm">
                 {{ passwordMessage }}
               </div>
             </div>
             <div class="mb-3 form-check">
-             <!-- <input type="checkbox" class="form-check-input" id="Check1" />-->
-              <Checkbox inputId="Check1" v-model="rememberMeCheckBox" :binary="true" />
-              <label class="form-check-label" for="Check1" >Remember me</label>
-
-
+              <!-- <input type="checkbox" class="form-check-input" id="Check1" />-->
+              <Checkbox
+                inputId="Check1"
+                v-model="rememberMeCheckBox"
+                :binary="true"
+              />
+              <label class="form-check-label" for="Check1">Remember me</label>
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
           </form>
@@ -106,16 +101,16 @@
 
 <script>
 import $ from "jquery";
-import Checkbox from 'primevue/checkbox';
-import CryptoJS from 'crypto-js';
+import Checkbox from "primevue/checkbox";
+import CryptoJS from "crypto-js";
 
 export default {
   components: {
-      Checkbox
+    Checkbox,
   },
   data() {
     return {
-      cryptKey : 'SDJFBOUdD45465fWQFGfZ3EdsVP4Idf9dfUBGdfUsBEDSFsUBG',
+      cryptKey: "SDJFBOUdD45465fWQFGfZ3EdsVP4Idf9dfUBGdfUsBEDSFsUBG",
       showSearch: false,
       MainTitleText: this._rootAppTitle,
       TopBackgroundStyle: "blue",
@@ -130,8 +125,8 @@ export default {
       formIsValid: true,
       isLoading: false,
       error: null,
-      rememberMe:'',
-      rememberMeCheckBox:false,
+      rememberMe: "",
+      rememberMeCheckBox: false,
 
       //testing;
       token: "",
@@ -194,28 +189,23 @@ export default {
           password: this.password,
         });
 
-   
-        if(this.rememberMeCheckBox == true){
+        if (this.rememberMeCheckBox == true) {
           this._rememberMe = this.username;
-          localStorage.setItem('rememberMe',this.username);
-          localStorage.setItem('rememberMePass',CryptoJS.AES.encrypt(this.password, this.cryptKey).toString());
-          
-         }else{
-          this._rememberMe = '';
-          localStorage.removeItem('rememberMe');
-          localStorage.removeItem('rememberMePass');
-       
+          localStorage.setItem("rememberMe", this.username);
+          localStorage.setItem(
+            "rememberMePass",
+            CryptoJS.AES.encrypt(this.password, this.cryptKey).toString()
+          );
+        } else {
+          this._rememberMe = "";
+          localStorage.removeItem("rememberMe");
+          localStorage.removeItem("rememberMePass");
         }
-
-
 
         this.isLoading = false;
         this.closeModal("closeLoginModal");
         this.$router.replace("/pages/trips/");
-      
-    
-    } catch (e) {
-
+      } catch (e) {
         this.closeModal("closeLoginModal"); //close login modal after submit;
         this.error = e.message || "Failed to authenticate.";
 
@@ -233,9 +223,8 @@ export default {
   emits: ["set-fullscreenwidth"],
 
   mounted() {
-
     //set some important variables
-    localStorage.setItem("_rootRestUrl",this._rootRestUrl); // this._rootRestUrl come from settings.in read in main.js
+    localStorage.setItem("_rootRestUrl", this._rootRestUrl); // this._rootRestUrl come from settings.in read in main.js
 
     this.showSearch = false;
 
@@ -245,45 +234,40 @@ export default {
     }
 
     this.$emit("set-fullscreenwidth");
-   
-    if(localStorage.getItem('rememberMe')!=null){
-      this._rememberMe = localStorage.getItem('rememberMe');
+
+    if (localStorage.getItem("rememberMe") != null) {
+      this._rememberMe = localStorage.getItem("rememberMe");
       this.rememberMeCheckBox = true;
       this.username = this._rememberMe;
-
-    }else{
-      this._rememberMe = '';
+    } else {
+      this._rememberMe = "";
       this.rememberMeCheckBox = false;
-     /* this.username = '';
+      /* this.username = '';
         this.password = '';*/
     }
 
-    if(localStorage.getItem('rememberMePass')!=null){  
-    
-          const decrypted = CryptoJS.AES.decrypt(localStorage.getItem('rememberMePass'), this.cryptKey)
-          const originalPassword =  decrypted.toString(CryptoJS.enc.Utf8);
-        
-          this.password = originalPassword;
+    if (localStorage.getItem("rememberMePass") != null) {
+      const decrypted = CryptoJS.AES.decrypt(
+        localStorage.getItem("rememberMePass"),
+        this.cryptKey
+      );
+      const originalPassword = decrypted.toString(CryptoJS.enc.Utf8);
 
+      this.password = originalPassword;
     }
 
-if(this.username=='null'){
-  this.username = '';  
-}
-
-
-    if(this.rememberMeCheckBox) {
-        $('#Check1').attr('checked','checked');
-    }   else{
-        $('#Check1').removeAttr('checked');
+    if (this.username == "null") {
+      this.username = "";
     }
-   
-   
 
+    if (this.rememberMeCheckBox) {
+      $("#Check1").attr("checked", "checked");
+    } else {
+      $("#Check1").removeAttr("checked");
+    }
   },
 };
 </script>
-
 
 <style>
 @import "primevue/resources/themes/bootstrap4-light-blue/theme.css"; /*theme*/
@@ -327,13 +311,12 @@ if(this.username=='null'){
   }
 }
 
-
-
 .form-check {
-     padding-left:0 !important ;
-  
+  padding-left: 0 !important ;
 }
-.p-checkbox{margin-right:7px}
+.p-checkbox {
+  margin-right: 7px;
+}
 
 /* -------------------------*/
 </style>
