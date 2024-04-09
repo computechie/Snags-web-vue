@@ -614,118 +614,12 @@
     :openDialogAddPhoto="openDialogAddPhoto"
   />
 
-  <!-- insert new trip Dialog-->
-  <Dialog
-    @update:visible="handleClose"
-    v-model:visible="newSnagDialog"
-    modal
-    :style="{ width: '50rem' }"
-    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-  >
-    <template #header> Enter new snag </template>
-
-    <div class="container" id="formContainer">
-      <div class="row insertFormRow align-items-center even">
-        <div class="col-md-3">
-          <label for="newSnagDate">Required by Date *</label>
-        </div>
-        <div class="col-md-9">
-          <Calendar
-            @change="changeDate('from')"
-            style="margin-left: 0"
-            id="newSnagDate"
-            class="dateDisplayInput"
-            v-model="newSnagDate"
-            showIcon
-            dateFormat="dd/mm/yy"
-            placeholder="dd/mm/yy"
-            mask="99/99/9999"
-          />
-
-          <InlineMessage v-if="!newSnagDateOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-3"><label for="newSnagTitle">Item *</label></div>
-        <div class="col-md-9">
-          <InputText
-            @input="newSnagTitleOK = true"
-            id="newSnagTitle"
-            v-model="newSnagTitle"
-          />
-          <InlineMessage v-if="!newSnagTitleOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center even">
-        <div class="col-md-3"><label for="newSnagCode">Code *</label></div>
-        <div class="col-md-9">
-          <InputText
-            @input="newSnagCodeOK = true"
-            id="newSnagCode"
-            v-model="newSnagCode"
-          />
-          <InlineMessage v-if="!newSnagCodeOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-3"><label for="newSnagStatus">Status * </label></div>
-        <div class="col-md-9">
-          <Dropdown
-            v-model="newSnagStatus"
-            :options="allStatuses"
-            optionLabel="name"
-            placeholder="Select Status"
-          ></Dropdown>
-
-          <InlineMessage v-if="!newSnagStatusOK"
-            >This field is required</InlineMessage
-          >
-        </div>
-      </div>
-
-      <div class="row insertFormRow align-items-center">
-        <div class="col-md-6 text-left">
-          <Button
-            @click="closeInsertDialog"
-            style="min-width: 120px"
-            v-tooltip.bottom="{
-              value: 'Cancel',
-              showDelay: 1000,
-              hideDelay: 300,
-            }"
-            icon="pi pi-times-circle"
-            type="button"
-            class="p-button-text redButton"
-            label="Cancel"
-          />
-        </div>
-        <div class="col-md-6 text-end">
-          <Button
-            style="min-width: 120px"
-            v-tooltip.bottom="{
-              value: 'Save snag',
-              showDelay: 1000,
-              hideDelay: 300,
-            }"
-            type="button"
-            icon="pi pi-pencil"
-            class="p-button-text"
-            @click="saveSnag"
-            label="Save snag"
-          />
-        </div>
-      </div>
-    </div>
-  </Dialog>
+  <NewSnagDialog
+    :newSnagDialog="newSnagDialogState"
+    :allStatuses="allStatuses"
+    :closeInsertDialog="closeInsertDialog"
+    :insertSnagToDatabase="InsertSnagToDatabase"
+  />
 
   <!-- Edit Snag Dialog-->
   <Dialog
@@ -1159,6 +1053,7 @@
 
 <script>
 import RightSidePanel from "../../ui/RightSidePanel.vue";
+import NewSnagDialog from "../../ui/dialogs/NewSnagDialog.vue";
 
 // Primevue datatable help: https://www.primefaces.org/primevue/datatable //
 import DataTable from "primevue/datatable";
@@ -1183,6 +1078,7 @@ export default {
   props: ["systemId"],
   components: {
     RightSidePanel,
+    NewSnagDialog,
     InputText,
     Button,
     DataTable,
@@ -1322,7 +1218,7 @@ export default {
       displayDeleteConfirm: false,
       deletingTripName: "",
       snagNotes: "",
-      newSnagDialog: false,
+      newSnagDialogState: false,
       editSnagDialog: false,
       isLoading: true,
       userType: "",
@@ -1354,26 +1250,6 @@ export default {
       displayInfoDialog: false,
       InfoModalHeader: "",
       InfoModalMessage: "",
-
-      newSnagDate: "",
-      newSnagFrom: "",
-      newSnagTo: "",
-      newSnagTitle: "",
-      newSnagCode: "",
-      newSnagStatus: "0",
-      newSnagStatusCosts: "0",
-      newSnagCompanyName: "",
-      newSnagComments: "",
-
-      newSnagDateOK: true,
-      newSnagFromOK: true,
-      newSnagToOK: true,
-      newSnagTitleOK: true,
-      newSnagCodeOK: true,
-      newSnagStatusOK: true,
-      newSnagStatusCostsOK: true,
-      newSnagCompanyNameOK: true,
-      newSnagCommentsOK: true,
 
       editSnagDate: "",
       editSnagTitle: "",
@@ -1590,10 +1466,9 @@ export default {
 
     newSnag() {
       this.resetInputFields();
-      this.newSnagDate = this.format_date(moment(), "DD/MM/YYYY");
 
       //show dialog for insert
-      this.newSnagDialog = true;
+      this.newSnagDialogState = true;
     },
     editSnag() {
       var AllOk = true;
@@ -1694,71 +1569,11 @@ export default {
       // ---------------------
     },
 
-    saveSnag() {
-      var AllOk = true;
-
-      if (this.newSnagDate == "") {
-        this.newSnagDateOK = false;
-        AllOk = false;
-      } else {
-        this.newSnagDateOK = true;
-      }
-
-      if (this.newSnagTitle == "") {
-        this.newSnagTitleOK = false;
-        AllOk = false;
-      } else {
-        this.newSnagTitleOK = true;
-      }
-
-      if (this.newSnagCode == null) {
-        this.newSnagCodeOK = false;
-        AllOk = false;
-      } else {
-        this.newSnagCodeOK = true;
-      }
-
-      if (this.newSnagStatus == undefined || this.newSnagStatus == "") {
-        this.newSnagStatus = "";
-        AllOk = false;
-        this.newSnagStatusOK = false;
-      } else {
-        this.newSnagStatus = this.newSnagStatus.value;
-        if (this.newSnagStatus == "") {
-          this.newSnagStatusOK = false;
-          AllOk = false;
-        } else {
-          this.newSnagStatusOK = true;
-        }
-      }
-
-      if (this.newSnagStatus == undefined) {
-        this.newSnagStatus = "";
-        AllOk = false;
-        this.newSnagStatusOK = false;
-      }
-
-      /*  if(this.newSnagComments == ''){
-        this.newSnagCommentsOK = false;
-        AllOk = false;
-      }else{this.newSnagCommentsOK = true;}*/
-
-      if (AllOk == true) {
-        this.InsertSnagToDatabase();
-      }
-    },
-
-    async InsertSnagToDatabase() {
+    async InsertSnagToDatabase(snag) {
       this.panelClass = "closedPanel";
       this.isLoading = true;
 
       // const sessionId=this.$store.getters.token;
-
-      //date and time from NOW()
-      var SnagDate = this.format_date(
-        moment(this.newSnagDate, "DD/MM/YYYY HH:mm"),
-        "YYYY-MM-DD HH:mm:ss"
-      );
 
       const baseUrl = this._rootRestUrl;
 
@@ -1766,10 +1581,10 @@ export default {
         ProjectRef: this.ProjectRef,
         type: "Snag",
         key: "",
-        code: this.newSnagCode,
-        caption: this.newSnagTitle,
-        status: this.newSnagStatus,
-        date: SnagDate,
+        code: snag.newSnagCode,
+        caption: snag.newSnagTitle,
+        status: snag.newSnagStatus,
+        date: snag.newSnagDate.toString(),
       });
 
       let config = {
@@ -1784,7 +1599,7 @@ export default {
           .then(() => {
             this.getSnags();
             this.getCompanies();
-            this.newSnagDialog = false;
+            this.newSnagDialogState = false;
             this.displayInfoDialog = true;
             this.InfoModalHeader = "Info";
             this.InfoModalMessage = "Snag is inserted";
@@ -1796,7 +1611,7 @@ export default {
           localStorage.clear();
           // document.location = '/';
         }
-        this.newSnagDialog = false;
+        this.newSnagDialogState = false;
 
         this.displayInfoDialog = true;
         this.InfoModalHeader = "Error " + error.response.status;
@@ -1824,7 +1639,7 @@ export default {
     },
 
     closeInsertDialog() {
-      this.newSnagDialog = false;
+      this.newSnagDialogState = false;
       this.resetInputFields();
     },
 
@@ -1835,26 +1650,6 @@ export default {
 
     resetInputFields() {
       //reset input and edit fields ;)
-      this.newSnagDate = "";
-      this.newSnagFrom = "";
-      this.newSnagTo = "";
-      this.newSnagTitle = "";
-      this.newSnagCode = "";
-      this.newSnagStatus = "";
-      this.newSnagStatusCosts = "";
-      this.newSnagCompanyName = "";
-      this.newSnagComments = "";
-
-      this.newSnagDateOK = true;
-      this.newSnagFromOK = true;
-      this.newSnagToOK = true;
-      this.newSnagTitleOK = true;
-      this.newSnagCodeOK = true;
-      this.newSnagStatusOK = true;
-      this.newSnagStatusCostsOK = true;
-      this.newSnagCompanyNameOK = true;
-      this.newSnagCommentsOK = true;
-
       this.editSnagDate = "";
       this.editSnagTitle = "";
       this.editSnagCode = "";

@@ -253,7 +253,7 @@ export default {
     "deletePhotoId",
     "closePanel",
     "editClick",
-    "deleteClick"
+    "deleteClick",
   ],
   components: {
     TabView,
