@@ -3601,35 +3601,6 @@ th.actionsColumns {
   color: #ccc !important;
 }
 
-.RightSidepanel {
-  height: 100%;
-  width: 0;
-  max-width: 100%;
-  position: fixed;
-  z-index: 1;
-  top: 0;
-  right: 0px;
-  background-color: #f5f5f5;
-  overflow-x: hidden;
-  padding-top: 15px;
-  padding-right: 0px;
-  padding-left: 0px;
-  transition: 0.5s;
-  box-shadow: 0px 20px 7px #cccccc;
-  z-index: 11;
-  position: absolute;
-  display: block;
-}
-.RightSidepanel .closebtn {
-  z-index: 1000;
-  position: absolute;
-  top: 0;
-  right: 35px;
-  font-size: 36px;
-  margin-left: 50px;
-  color: #343434;
-  text-decoration: none;
-}
 .closedPanel {
   width: 0px;
 }
@@ -3692,9 +3663,6 @@ th.actionsColumns {
 }
 .actionIcons {
   cursor: pointer;
-}
-.RightSidepanel .row {
-  margin: 0;
 }
 
 .swiperSlideHolder img {
