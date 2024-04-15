@@ -51,12 +51,6 @@
       </div>
     </template>
 
-    <!-- One image-->
-    <!-- <div :class="'zoomedImageHolder'" >
-            <img :src="zoomedImageSource" :class="'zoomedImageClass'+ rotationClass">
-        </div>-->
-
-    <!-- or carousel again-->
     <div :class="'zoomedImageHolder'">
       <swiper
         :modules="modules"
@@ -97,12 +91,17 @@
       <div class="row">
         <div class="col-md-4 text-start"></div>
         <div class="col-md-4 text-center">
-          <!-- <a  v-tooltip.top="{ value: 'Rotate photo', showDelay: 1000, hideDelay: 300 }" href="javascript:"  @click="rotateZoomedImage(zoomedImageId)" style="font-size:30px" ><i class="pi pi-undo rotateIcon"></i></a>
-             -->
           <Button
             v-tooltip.bottom="'Rotate image'"
             icon="pi pi-undo rotateIcon"
             @click="rotateZoomedImage(zoomedImageId)"
+            class="downloadImageButton"
+            style="margin-right: 30px"
+          />
+          <Button
+            v-tooltip.bottom="'Edit image'"
+            icon="pi pi-pencil"
+            @click="editZoomedImage(zoomedImageId)"
             class="downloadImageButton"
             style="margin-right: 30px"
           />
@@ -132,10 +131,13 @@
         </div>
       </div>
     </div>
-    <!-- ------------------------------ -->
-
-    <template #footer> </template>
   </Dialog>
+
+  <EditImageDialog
+    :showImageEditor="showImageEditorModal"
+    :editingImageSource="editingImageSource"
+    :closeImageEditorDialog="closeImageEditorDialog"
+  />
 
   <!-- dialog confirm Delete Photo -->
   <Dialog
@@ -169,6 +171,8 @@
   </Dialog>
 </template>
 <script>
+import EditImageDialog from "./dialogs/EditImageDialog.vue";
+
 // import Swiper core and required components
 import { Navigation, Pagination, Scrollbar, A11y } from "swiper/modules";
 import Button from "primevue/button";
@@ -194,6 +198,7 @@ export default {
     SwiperSlide,
     Dialog,
     Button,
+    EditImageDialog,
   },
   emits: ["showloader", "swiper", "deletePhoto", "deletePhotomodal"],
   setup() {
@@ -221,6 +226,8 @@ export default {
       zoomedImageId: "",
       photoIdForDelete: "",
       visibleImagesModal: false,
+      showImageEditorModal: false,
+      editingImageSource: "",
       baseUrl: localStorage.getItem("_rootRestUrl"),
       methodName: "/api/Attachments/ViewPhoto",
       methodNameDownload: "/api/Attachments/DownloadPhoto",
@@ -240,14 +247,6 @@ export default {
 
     downloadImage() {
       this.$emit("showloader", true);
-
-      /* var downloadURL = this.baseUrl+this.methodName+this.parameter+this.zoomedImageId+'&='+this.timestamp;
-          const link = document.createElement('a');
-          link.href = downloadURL;
-          link.download = 'download';
-          link.target = '_blank';
-          link.click();
-          URL.revokeObjectURL(link.href)*/
 
       const index = $("#" + this.zoomedImageId).attr("index");
       const filename = this.tripImages[index]["caption"];
@@ -287,8 +286,6 @@ export default {
       this.visibleImagesModal = true;
       this.rotationClass = "";
 
-      // alert(index)
-
       this.defaultSlideTo = index;
       this.loading = false;
     },
@@ -312,23 +309,31 @@ export default {
         },
       };
 
-      // this.timestamp = Date.now();
-
       await axios
         .get(newPhotoUrlRequest, formData, config)
         .then(() => {
           this.timestamp = Date.now();
-          //   var newPhotoUrl = this.baseUrl+this.methodName+this.parameter+imageId +'&t='+this.timestamp;
-
-          //  $('#'+imageId).attr('src',newPhotoUrl)
-
           setTimeout(() => this.$emit("showloader", false), 375);
         })
         .catch(function (error) {
           // handle error
           console.table(error);
-          //   this.$emit('showloader',false);
         });
+    },
+
+    editZoomedImage(zoomedImageId) {
+      this.editingImageSource =
+        this.baseUrl +
+        this.methodName +
+        this.parameter +
+        zoomedImageId +
+        "&t=" +
+        this.timestamp;
+      this.showImageEditorModal = true;
+    },
+
+    closeImageEditorDialog() {
+      this.showImageEditorModal = false;
     },
 
     sendBackIdForDelete(imageId) {
@@ -364,6 +369,9 @@ export default {
 <style>
 .swiperSlideHolder img {
   width: 100%;
+}
+.swiperSlideHolder canvas {
+  margin: 0 auto;
 }
 
 .p-dialog-mask {
@@ -466,7 +474,7 @@ export default {
 }
 
 .zoomImageDialog {
-  height: calc(100vh - 25px;);
+  height: calc(100vh - 25px);
   max-height: unset !important;
 }
 .zoomImageDialog .p-dialog-content {

@@ -630,23 +630,12 @@
     :editSnagInDatabase="editSnagInDatabase"
   />
 
-  <!-- dialog info -->
-  <Dialog
-    v-model:visible="displayInfoDialog"
-    modal
-    :style="{ width: '25rem' }"
-    :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
-  >
-    <template #header="">
-      <h4>{{ InfoModalHeader }}</h4>
-    </template>
-
-    <span class="font-bold text-2xl block mb-2 mt-4"></span>
-    <p class="mb-0">{{ InfoModalMessage }}</p>
-    <div class="flex text-end gap-2 mt-4">
-      <Button label="Ok" @click="closeInfo"></Button>
-    </div>
-  </Dialog>
+  <InfoDialog
+    :displayInfoDialog="displayInfoDialog"
+    :infoModalHeader="InfoModalHeader"
+    :infoModalMessage="InfoModalMessage"
+    :closeInfo="closeInfo"
+  />
 
   <!-- dialog confirm Delete -->
   <Dialog
@@ -950,6 +939,7 @@
 import RightSidePanel from "../../ui/RightSidePanel.vue";
 import NewSnagDialog from "../../ui/dialogs/NewSnagDialog.vue";
 import EditSnagDialog from "../../ui/dialogs/EditSnagDialog.vue";
+import InfoDialog from "../../ui/dialogs/InfoDialog.vue";
 
 // Primevue datatable help: https://www.primefaces.org/primevue/datatable //
 import DataTable from "primevue/datatable";
@@ -975,6 +965,7 @@ export default {
     RightSidePanel,
     NewSnagDialog,
     EditSnagDialog,
+    InfoDialog,
     InputText,
     Button,
     DataTable,
