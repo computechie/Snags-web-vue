@@ -1,11 +1,11 @@
 export function drawOnImage(canvasTarget = "canvasEditor", image = null) {
   const canvasElement = document.getElementById(canvasTarget);
-  canvasElement.style.backgroundColor = "red";
   if (!canvasElement) return;
-  const context = canvasElement.getContext("2d");
 
-  // if an image is present,
-  // the image passed as parameter is drawn in the canvas
+  const context = canvasElement.getContext("2d");
+  let tool = "pencil";
+  let startX, startY;
+
   if (image) {
     const imageWidth = image.width;
     const imageHeight = image.height;
@@ -17,6 +17,16 @@ export function drawOnImage(canvasTarget = "canvasEditor", image = null) {
 
     context.drawImage(image, 0, 0, desiredWidth, desiredHeight);
   }
+
+  document
+    .getElementById("pencilButton")
+    .addEventListener("click", () => (tool = "pencil"));
+  document
+    .getElementById("rectangleButton")
+    .addEventListener("click", () => (tool = "rectangle"));
+  document
+    .getElementById("textButton")
+    .addEventListener("click", () => (tool = "text"));
 
   let isDrawing = false;
 
@@ -30,27 +40,48 @@ export function drawOnImage(canvasTarget = "canvasEditor", image = null) {
 
   canvasElement.onmousedown = (e) => {
     isDrawing = true;
-    // Adjust coordinates relative to the canvas and dialog position
     const { x, y } = getMousePosition(e);
-    context.beginPath();
-    context.lineWidth = 1;
-    context.strokeStyle = "black";
-    context.lineJoin = "round";
-    context.lineCap = "round";
-    context.moveTo(x, y);
-  };
-
-  canvasElement.onmousemove = (e) => {
-    if (isDrawing) {
-      const { x, y } = getMousePosition(e);
-
+    startX = x;
+    startY = y;
+    if (tool === "text") {
+      const text = prompt("Enter text:", "");
+      if (text) {
+        context.fillText(text, x, y);
+      }
+      isDrawing = false; // Stop drawing after text input
+    } else {
+      context.beginPath();
+      context.moveTo(x, y);
       context.lineTo(x, y);
       context.stroke();
     }
   };
 
-  canvasElement.onmouseup = function () {
+  canvasElement.onmousemove = (e) => {
+    if (!isDrawing) return;
+    const { x, y } = getMousePosition(e);
+    if (tool === "pencil") {
+      context.lineTo(x, y);
+      context.stroke();
+    } else if (tool === "rectangle" && isDrawing) {
+      // TODO: rectangle indication
+    }
+  };
+
+  canvasElement.onmouseup = function (e) {
+    if (tool === "rectangle" && isDrawing) {
+      const { x, y } = getMousePosition(e);
+      context.strokeRect(startX, startY, x - startX, y - startY);
+    }
+
     isDrawing = false;
     context.closePath();
   };
+
+  context.lineWidth = 2;
+  context.lineJoin = "round";
+  context.lineCap = "round";
+  context.font = "16px Arial";
+  context.strokeStyle = "red";
+  context.fillStyle = "red";
 }
