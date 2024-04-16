@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkSnags"]=self["webpackChunkSnags"]||[]).push([[659],{659:function(n,s,t){t.r(s),t.d(s,{default:function(){return k}});var e=t(3396);const a={class:"alignBootmRightAtPage"},r=(0,e.Uk)(" +353(0) 1492 6623 "),u=(0,e._)("br",null,null,-1),c=(0,e.Uk)(" sales@dfmsystems.com "),l=[r,u,c];function i(n,s){return(0,e.wg)(),(0,e.iD)("div",a,l)}var o=t(89);const f={},g=(0,o.Z)(f,[["render",i]]);var k=g}}]);
-//# sourceMappingURL=659.df970898.js.map
