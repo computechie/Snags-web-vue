@@ -1214,11 +1214,7 @@ export default {
       const baseUrl = this._rootRestUrl;
 
       const xhr = new XMLHttpRequest();
-      xhr.open(
-        "GET",
-        baseUrl + "/api/PDF/DownloadSnagPDF/?snagKey=" + snagKey,
-        true
-      );
+      xhr.open("GET", baseUrl + "/api/PDF/Download/?snagKey=" + snagKey, true);
       xhr.setRequestHeader(
         "Content-Type",
         "application/x-www-form-urlencoded; charset=UTF-8"
@@ -1360,7 +1356,7 @@ export default {
 
       try {
         await axios
-          .put(baseUrl + "/api/Snags/EditSnag", formData, config)
+          .put(baseUrl + "/api/Snags/Edit", formData, config)
           .then(() => {
             this.getSnags();
             this.getCompanies();
@@ -1411,7 +1407,7 @@ export default {
 
       try {
         await axios
-          .post(baseUrl + "/api/Snags/InsertSnag", formData, config)
+          .post(baseUrl + "/api/Snags/Insert", formData, config)
           .then(() => {
             this.getSnags();
             this.getCompanies();
@@ -1935,7 +1931,7 @@ export default {
 
       try {
         await axios
-          .post(baseUrl + "/api/Snags/GetAllSnags/", formData, config)
+          .post(baseUrl + "/api/Snags/GetAll/", formData, config)
           .then((response) => {
             this.allSnags = response.data.snags;
             this.totalRecords = response.data.totalRecords;
@@ -1988,7 +1984,7 @@ export default {
       try {
         await axios
           .get(
-            baseUrl + "/api/LookUps/GetStatusLookUps?category=" + "SNSTAT",
+            baseUrl + "/api/LookUps/GetAll?category=" + "SNSTAT",
             formData,
             config
           )
@@ -2119,7 +2115,7 @@ export default {
 
       try {
         await axios
-          .post(baseUrl + "/api/Attachments/InsertPhoto", formData, config)
+          .post(baseUrl + "/api/Attachments/Insert", formData, config)
           .then(() => {
             this.displayInfoDialog = true;
             this.InfoModalHeader = "Info";
@@ -2395,7 +2391,7 @@ export default {
       try {
         await axios
           .get(
-            baseUrl + "/api/Snags/GetSnagDetails/?snagKey=" + this.ClickedRowId,
+            baseUrl + "/api/Snags/GetDetails/?snagKey=" + this.ClickedRowId,
             formData,
             config
           )
